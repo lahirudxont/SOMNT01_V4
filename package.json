@@ -1,5 +1,5 @@
 {
-  "name": "somnt01-ng19",
+  "name": "SOMNT01",
   "version": "0.0.0",
   "scripts": {
     "ng": "ng",
@@ -10,15 +10,25 @@
   },
   "private": true,
   "dependencies": {
+    "@angular/animations": "^19.2.14",
+    "@angular/cdk": "^19.2.19",
     "@angular/common": "^19.2.0",
     "@angular/compiler": "^19.2.0",
     "@angular/core": "^19.2.0",
     "@angular/forms": "^19.2.0",
+    "@angular/material": "^19.2.19",
     "@angular/platform-browser": "^19.2.0",
     "@angular/platform-browser-dynamic": "^19.2.0",
     "@angular/router": "^19.2.0",
+    "@fortawesome/fontawesome-free": "^7.0.0",
+    "@ng-bootstrap/ng-bootstrap": "^13.1.1",
+    "angular2-datatable": "^0.6.0",
+    "bootstrap": "^5.3.7",
+    "jspdf": "^3.0.1",
+    "ngx-spinner": "^19.0.0",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0",
+    "xont-ventura-list-prompt": "file:../../list_pack/xont-ventura-list-prompt-0.0.1.tgz",
     "zone.js": "~0.15.0"
   },
   "devDependencies": {

@@ -1,0 +1,459 @@
+<!-- Busy Indicator -->
+<mat-progress-bar *ngIf="isLoading()" mode="indeterminate"></mat-progress-bar>
+
+<form [formGroup]="mainForm" (ngSubmit)="onSubmit()">
+  <mat-tab-group dynamicHeight>
+    <!-- Executive Profile Tab -->
+    <mat-tab label="Executive Profile">
+      <div class="tab-content">
+        <div formGroupName="executiveProfile">
+          <mat-form-field appearance="outline">
+            <mat-label>Executive Code</mat-label>
+            <input matInput formControlName="ExecutiveCode" readonly />
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Executive Name *</mat-label>
+            <input matInput formControlName="ExecutiveName" required />
+            <mat-error
+              *ngIf="
+                executiveProfileForm.get('ExecutiveName')?.invalid &&
+                executiveProfileForm.get('ExecutiveName')?.touched
+              "
+            >
+              Executive Name is required.
+            </mat-error>
+          </mat-form-field>
+
+          <!-- Operation Type Prompt -->
+          <div class="form-row">
+            <mat-form-field appearance="outline">
+              <mat-label>Operation Type *</mat-label>
+              <input
+                matInput
+                formControlName="OperationType"
+                readonly
+                required
+              />
+              <button
+                mat-icon-button
+                matSuffix
+                type="button"
+                (click)="openOperationTypePrompt()"
+              >
+                <mat-icon>search</mat-icon>
+              </button>
+              <mat-error
+                *ngIf="
+                  executiveProfileForm.get('OperationType')?.invalid &&
+                  executiveProfileForm.get('OperationType')?.touched
+                "
+              >
+                Operation Type is required.
+              </mat-error>
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>Description</mat-label>
+              <input matInput formControlName="OperationTypeDesc" readonly />
+            </mat-form-field>
+          </div>
+
+          <!-- User Profile Prompt -->
+          <div class="form-row">
+            <mat-form-field appearance="outline">
+              <mat-label>User Profile *</mat-label>
+              <input matInput formControlName="UserProfile" readonly required />
+              <button
+                mat-icon-button
+                matSuffix
+                type="button"
+                (click)="openUserProfilePrompt()"
+              >
+                <mat-icon>search</mat-icon>
+              </button>
+              <mat-error
+                *ngIf="
+                  executiveProfileForm.get('UserProfile')?.invalid &&
+                  executiveProfileForm.get('UserProfile')?.touched
+                "
+              >
+                User Profile is required.
+              </mat-error>
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>Name</mat-label>
+              <input matInput formControlName="UserProfileName" readonly />
+            </mat-form-field>
+          </div>
+
+          <!-- Incentive Group Prompt -->
+          <div class="form-row">
+            <mat-form-field appearance="outline">
+              <mat-label>Incentive Group *</mat-label>
+              <input
+                matInput
+                formControlName="IncentiveGroup"
+                readonly
+                required
+              />
+              <button
+                mat-icon-button
+                matSuffix
+                type="button"
+                (click)="openIncentiveGroupPrompt()"
+              >
+                <mat-icon>search</mat-icon>
+              </button>
+              <mat-error
+                *ngIf="
+                  executiveProfileForm.get('IncentiveGroup')?.invalid &&
+                  executiveProfileForm.get('IncentiveGroup')?.touched
+                "
+              >
+                Incentive Group is required.
+              </mat-error>
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>Name</mat-label>
+              <input matInput formControlName="IncentiveGroupName" readonly />
+            </mat-form-field>
+          </div>
+
+          <!-- Retailer Type -->
+          <mat-form-field appearance="outline">
+            <mat-label>Retailer Type</mat-label>
+            <mat-select formControlName="RetailerType">
+              <mat-option value="0">Create New & Edit Retailers</mat-option>
+              <mat-option value="1">View Details Only</mat-option>
+              <mat-option value="2">Edit Details Only</mat-option>
+              <mat-option value="3">Create New & Edit Profile Info</mat-option>
+              <mat-option value="4">Create New Only</mat-option>
+              <mat-option value="9">Do not Allow</mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <!-- Date of Birth -->
+          <mat-form-field appearance="outline">
+            <mat-label>Date of Birth</mat-label>
+            <input
+              matInput
+              [matDatepicker]="dobPicker"
+              formControlName="DateOfBirth"
+            />
+            <mat-datepicker-toggle
+              matSuffix
+              [for]="dobPicker"
+            ></mat-datepicker-toggle>
+            <mat-datepicker #dobPicker></mat-datepicker>
+          </mat-form-field>
+
+          <!-- Status Checkbox -->
+          <mat-checkbox formControlName="Status">Status</mat-checkbox>
+
+          <!-- Add other fields from the Executive Profile section -->
+        </div>
+      </div>
+    </mat-tab>
+
+    <!-- Stock Tab -->
+    <mat-tab label="Stock">
+      <div class="tab-content">
+        <div formGroupName="stock">
+          <!-- Stock Territory Prompt -->
+          <div class="form-row">
+            <mat-form-field appearance="outline">
+              <mat-label>Stock Territory *</mat-label>
+              <input
+                matInput
+                formControlName="StockTerritory"
+                readonly
+                required
+              />
+              <button
+                mat-icon-button
+                matSuffix
+                type="button"
+                (click)="openStockTerritoryPrompt()"
+              >
+                <mat-icon>search</mat-icon>
+              </button>
+              <mat-error
+                *ngIf="
+                  stockForm.get('StockTerritory')?.invalid &&
+                  stockForm.get('StockTerritory')?.touched
+                "
+              >
+                Stock Territory is required.
+              </mat-error>
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>Description</mat-label>
+              <input matInput formControlName="StockTerritoryDesc" readonly />
+            </mat-form-field>
+          </div>
+
+          <!-- Default Stock Location Prompt -->
+          <div class="form-row">
+            <mat-form-field appearance="outline">
+              <mat-label>Warehouse *</mat-label>
+              <input
+                matInput
+                formControlName="DefStockWarehouse"
+                readonly
+                required
+              />
+              <button
+                mat-icon-button
+                matSuffix
+                type="button"
+                (click)="openDefStockWarehousePrompt()"
+              >
+                <mat-icon>search</mat-icon>
+              </button>
+              <mat-error
+                *ngIf="
+                  stockForm.get('DefStockWarehouse')?.invalid &&
+                  stockForm.get('DefStockWarehouse')?.touched
+                "
+              >
+                Warehouse is required.
+              </mat-error>
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>Location *</mat-label>
+              <input
+                matInput
+                formControlName="DefStockLocation"
+                readonly
+                required
+              />
+              <button
+                mat-icon-button
+                matSuffix
+                type="button"
+                (click)="openDefStockLocationPrompt()"
+              >
+                <mat-icon>search</mat-icon>
+              </button>
+              <mat-error
+                *ngIf="
+                  stockForm.get('DefStockLocation')?.invalid &&
+                  stockForm.get('DefStockLocation')?.touched
+                "
+              >
+                Location is required.
+              </mat-error>
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>Description</mat-label>
+              <input matInput formControlName="DefStockLocationDes" readonly />
+            </mat-form-field>
+          </div>
+
+          <!-- Add other fields from the Stock section -->
+        </div>
+      </div>
+    </mat-tab>
+
+    <!-- Other Tab -->
+    <mat-tab label="Other">
+      <div class="tab-content">
+        <div formGroupName="other">
+          <mat-form-field appearance="outline">
+            <mat-label>Commission Percentage</mat-label>
+            <input
+              matInput
+              type="number"
+              formControlName="CommissionPercentage"
+              min="0"
+              max="100"
+            />
+            <mat-error
+              *ngIf="otherForm.get('CommissionPercentage')?.errors?.['min'] || otherForm.get('CommissionPercentage')?.errors?.['max']"
+            >
+              Commission must be between 0 and 100.
+            </mat-error>
+          </mat-form-field>
+
+          <mat-checkbox formControlName="chkOnlineExecutive"
+            >Online Executive</mat-checkbox
+          >
+
+          <!-- Add other fields from the Other section -->
+        </div>
+      </div>
+    </mat-tab>
+
+    <!-- Merchandising Tab -->
+    <mat-tab label="Merchandising">
+      <div class="tab-content">
+        <div formGroupName="merchandizing">
+          <mat-checkbox formControlName="chkAutoTMRouteCode"
+            >Auto TM Route Code</mat-checkbox
+          >
+          <!-- Add other fields from the Merchandising section -->
+        </div>
+      </div>
+    </mat-tab>
+
+    <!-- Hierarchy Tab -->
+    <mat-tab label="Hierarchy" *ngIf="isHierarchyTabVisible()">
+      <div class="tab-content">
+        <div formGroupName="hierarchy">
+          <!-- Hierarchy Group Prompt -->
+          <div class="form-row">
+            <mat-form-field appearance="outline">
+              <mat-label>Hierarchy Group *</mat-label>
+              <input
+                matInput
+                formControlName="HierarchyGroup"
+                readonly
+                required
+              />
+              <button
+                mat-icon-button
+                matSuffix
+                type="button"
+                (click)="openHierarchyGroupPrompt()"
+              >
+                <mat-icon>search</mat-icon>
+              </button>
+              <mat-error
+                *ngIf="
+                  hierarchyForm.get('HierarchyGroup')?.invalid &&
+                  hierarchyForm.get('HierarchyGroup')?.touched
+                "
+              >
+                Hierarchy Group is required.
+              </mat-error>
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>Description</mat-label>
+              <input matInput formControlName="HierarchyGroupDesc" readonly />
+              <!-- Assuming you have this -->
+            </mat-form-field>
+          </div>
+
+          <!-- Parent Hierarchy Prompt -->
+          <div class="form-row">
+            <mat-form-field appearance="outline">
+              <mat-label>Parent Hierarchy *</mat-label>
+              <input
+                matInput
+                formControlName="ParentHierarchy"
+                readonly
+                required
+              />
+              <button
+                mat-icon-button
+                matSuffix
+                type="button"
+                (click)="openParentHierarchyPrompt()"
+              >
+                <mat-icon>search</mat-icon>
+              </button>
+              <mat-error
+                *ngIf="
+                  hierarchyForm.get('ParentHierarchy')?.invalid &&
+                  hierarchyForm.get('ParentHierarchy')?.touched
+                "
+              >
+                Parent Hierarchy is required.
+              </mat-error>
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>Description</mat-label>
+              <input matInput formControlName="ParentHierarchyDesc" readonly />
+              <!-- Assuming you have this -->
+            </mat-form-field>
+          </div>
+
+          <!-- Add other fields from the Hierarchy section -->
+        </div>
+
+        <!-- Hierarchy Details Table -->
+        <h3>Hierarchy Details</h3>
+        <div class="table-container">
+          <table
+            mat-table
+            [dataSource]="hierarchyDetailsFormArray.controls"
+            formArrayName="hierarchyDetails"
+          >
+            <ng-container matColumnDef="BusinessUnit">
+              <th mat-header-cell *matHeaderCellDef>Business Unit</th>
+              <td
+                mat-cell
+                *matCellDef="let element; let i = index"
+                [formGroupName]="i"
+              >
+                <mat-form-field appearance="outline">
+                  <input matInput formControlName="BusinessUnit" required />
+                  <mat-error
+                    *ngIf="
+                      getHierarchyDetailControl(i, 'BusinessUnit')?.invalid &&
+                      getHierarchyDetailControl(i, 'BusinessUnit')?.touched
+                    "
+                  >
+                    BU is required.
+                  </mat-error>
+                </mat-form-field>
+              </td>
+            </ng-container>
+
+            <ng-container matColumnDef="ExecutiveCode">
+              <th mat-header-cell *matHeaderCellDef>Executive Code</th>
+              <td
+                mat-cell
+                *matCellDef="let element; let i = index"
+                [formGroupName]="i"
+              >
+                <input matInput formControlName="ExecutiveCode" />
+              </td>
+            </ng-container>
+
+            <!-- Add other columns as needed -->
+
+            <ng-container matColumnDef="actions">
+              <th mat-header-cell *matHeaderCellDef>Actions</th>
+              <td mat-cell *matCellDef="let element; let i = index">
+                <button
+                  mat-icon-button
+                  color="warn"
+                  type="button"
+                  (click)="removeHierarchyDetail(i)"
+                >
+                  <mat-icon>delete</mat-icon>
+                </button>
+              </td>
+            </ng-container>
+
+            <tr
+              mat-header-row
+              *matHeaderRowDef="displayedHierarchyColumns"
+            ></tr>
+            <tr
+              mat-row
+              *matRowDef="let row; columns: displayedHierarchyColumns"
+            ></tr>
+          </table>
+        </div>
+        <button mat-raised-button type="button" (click)="addHierarchyDetail()">
+          Add Row
+        </button>
+      </div>
+    </mat-tab>
+  </mat-tab-group>
+
+  <!-- Action Buttons -->
+  <div class="action-buttons">
+    <button
+      mat-raised-button
+      color="primary"
+      type="submit"
+      [disabled]="isLoading()"
+    >
+      OK
+    </button>
+    <button mat-raised-button type="button" (click)="onCancel()">Cancel</button>
+  </div>
+</form>
