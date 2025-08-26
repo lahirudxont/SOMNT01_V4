@@ -1,220 +1,264 @@
 <xont-ventura-message-prompt #msgPrompt></xont-ventura-message-prompt>
 
-<!-- Loading Overlay -->
-<div *ngIf="isLoading" class="loading-overlay">
-  <div class="loading-spinner">
-    <span>Loading...</span>
-  </div>
-</div>
-
-<!-- Collapsible Section -->
 <xont-ventura-collapsible
   id="collapse1"
   targetElementID="selectionCriteria"
   [collapsed]="searchForm.get('Collapsed')?.value"
-  (onChange)="toggleCollapse()"
-></xont-ventura-collapsible>
-
-<form
-  [formGroup]="searchForm"
-  (ngSubmit)="list(true)"
-  [hidden]="searchForm.get('Collapsed')?.value"
+  (onChange)="
+    searchForm.patchValue({ Collapsed: !searchForm.get('Collapsed')?.value })
+  "
 >
-  <div id="selectionCriteria" class="collapse">
-    <div class="form-section">
-      <div class="form-row">
-        <label for="txtExecutiveCode" class="form-label">Executive Code</label>
-        <input
-          formControlName="ExecutiveCode"
-          type="text"
-          id="txtExecutiveCode"
-          class="form-input"
-          maxlength="10"
-        />
-      </div>
+</xont-ventura-collapsible>
 
-      <div class="form-row">
-        <label for="txtExecutiveName" class="form-label">Executive Name</label>
-        <input
-          formControlName="ExecutiveName"
-          type="text"
-          id="txtExecutiveName"
-          class="form-input"
-          maxlength="50"
-        />
-      </div>
-
-      <div class="form-row" formGroupName="Territory">
-        <label class="form-label">Territory</label>
-        <xont-ventura-list-prompt
-          name="lpmtTerritory"
-          id="lpmtTerritory"
-          #lpmtTerritory
-          [maxLengths]="[4, 50]"
-          [inputWidths]="[120, 320]"
-          [gridHeaders]="['Territory Code', 'Description']"
-          [gridFields]="['masterGroupValue', 'masterGroupValueDescription']"
-          [mandatory]="false"
-          [type]="'Territory'"
-          [control]="searchForm"
-          [status]="'All'"
-          [strict]="true"
-          [modelProps]="['territoryCode', 'territoryDesc']"
-          [dataFields]="['masterGroupValue', 'masterGroupValueDescription']"
-        >
-        </xont-ventura-list-prompt>
-      </div>
-
-      <div class="form-row" formGroupName="OperationTypeGroup">
-        <label class="form-label">Operation Type</label>
-        <xont-ventura-list-prompt
-          name="lpmtOptType"
-          id="lpmtOptType"
-          #lpmtOptType
-          [maxLengths]="[2, 50]"
-          [inputWidths]="[120, 320]"
-          [gridHeaders]="['Code', 'Description']"
-          [gridFields]="['code', 'description']"
-          [mandatory]="false"
-          [strict]="true"
-          [control]="searchForm"
-          (onDataBind)="lpmtOptType_DataBind()"
-          [modelProps]="['operationType', 'operationTypeDesc']"
-          [dataFields]="['code', 'description']"
-        >
-        </xont-ventura-list-prompt>
-      </div>
-
-      <xont-ventura-classification-selector
-        #clsExecutive
-        [id]="cls1.ID"
-        [taskCode]="cls1.TaskCode"
-        [classificationType]="cls1.Type"
-        [labelWidth]="cls1.LabelWidth"
-        [enableUserInput]="cls1.EnableUserInput"
-        [codeTextWidth]="cls1.CodeTextWidth"
-        [descriptionTextWidth]="cls1.DescriptionTextWidth"
-        [activeStatus]="cls1.ActiveStatus"
-        [allMandatory]="cls1.AllMandatory"
-        [lastLevelRequired]="cls1.LastLevelRequired"
-      >
-      </xont-ventura-classification-selector>
-
-      <div class="form-row">
-        <label class="form-label">Search type</label>
-        <div class="radio-group">
-          <label class="radio-option">
-            <input
-              type="radio"
-              formControlName="SearchType"
-              value="startWith"
-              id="optStartWith"
-            />
-            <span>Start with</span>
-          </label>
-          <label class="radio-option">
-            <input
-              type="radio"
-              formControlName="SearchType"
-              value="anyWhere"
-              id="optAnyWhereInText"
-            />
-            <span>Anywhere in text</span>
-          </label>
-        </div>
-      </div>
-
-      <div class="form-row checkbox-row">
-        <label class="checkbox-container">
-          <input
-            type="checkbox"
-            formControlName="ActiveOnly"
-            id="chkActiveOnly"
-          />
-          <span class="checkmark"></span>
-          <span>Active only</span>
-        </label>
-      </div>
-
-      <div class="form-row button-row">
-        <button type="submit" id="btnList" class="main-button">List</button>
-      </div>
-    </div>
-  </div>
-</form>
-
-<!-- Results Section -->
-<div class="results-section">
-  <div *ngIf="!isLoading && executiveDataset?.length === 0" class="no-data">
-    No data found for the given criteria
-  </div>
-
-  <div
-    class="data-table-container"
-    *ngIf="executiveDataset && executiveDataset.length > 0"
-  >
-    <table class="data-table">
-      <thead>
-        <tr>
-          <th>Executive Code</th>
-          <th>Executive Name</th>
-          <th>User Profile</th>
-          <th>Territory</th>
-          <th>Operation Type</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
+<div
+  id="selectionCriteria"
+  class="collapse"
+  [class.collapsed]="searchForm.get('Collapsed')?.value"
+>
+  <form [formGroup]="searchForm" (ngSubmit)="onSearch()">
+    <table>
       <tbody>
-        <tr
-          *ngFor="let item of executiveDataset; trackBy: trackByExecutive"
-          [class.deactive-row]="item.Status === 0"
-        >
-          <td>{{ item.ExecutiveCode }}</td>
-          <td>{{ item.ExecutiveName }}</td>
-          <td>{{ item.UserProfileName }}</td>
-          <td>{{ item.TerritoryName }}</td>
-          <td>{{ item.OperationTypeDesc }}</td>
-          <td class="actions-cell">
-            <button
-              class="action-button"
-              (click)="newBasedOn_OnClick(item)"
-              title="New Based On"
+        <tr>
+          <td width="120">
+            <span class="Captionstyle">Executive Code</span>
+          </td>
+          <td>
+            <input
+              formControlName="ExecutiveCode"
+              type="text"
+              class="Textboxstyle"
+              style="width: 120px"
+              maxlength="10"
+            />
+          </td>
+        </tr>
+        <tr>
+          <td width="120">
+            <span class="Captionstyle">Executive Name</span>
+          </td>
+          <td>
+            <input
+              formControlName="ExecutiveName"
+              type="text"
+              class="Textboxstyle"
+              style="width: 320px"
+              maxlength="50"
+            />
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <table>
+      <tbody>
+        <tr>
+          <td width="120">
+            <span class="Captionstyle">Territory</span>
+          </td>
+          <td>
+            <xont-ventura-list-prompt
+              name="lpmtTerritory"
+              [maxLengths]="[4, 50]"
+              [inputWidths]="[120, 320]"
+              [gridHeaders]="['Territory Code', 'Description']"
+              [gridFields]="['masterGroupValue', 'masterGroupValueDescription']"
+              [mandatory]="false"
+              [type]="'territory'"
+              [status]="'All'"
+              [strict]="true"
+              [control]="searchForm"
+              [modelProps]="['territoryCode', 'territoryDesc']"
+              [dataFields]="['masterGroupValue', 'masterGroupValueDescription']"
             >
-              Clone
-            </button>
-            <button
-              class="action-button edit-button"
-              (click)="edit_OnClick(item)"
-              title="Edit"
+            </xont-ventura-list-prompt>
+          </td>
+        </tr>
+        <tr>
+          <td width="120">
+            <span class="Captionstyle">Operation Type</span>
+          </td>
+          <td>
+            <xont-ventura-list-prompt
+              name="lpmtOptType"
+              #lpmtOptType
+              [maxLengths]="[2, 50]"
+              [inputWidths]="[120, 320]"
+              [gridHeaders]="['Code', 'Description']"
+              [gridFields]="['code', 'description']"
+              [mandatory]="false"
+              [strict]="true"
+              (onDataBind)="lpmtOptType_DataBind()"
+              [control]="searchForm"
+              [modelProps]="['operationType', 'operationTypeDesc']"
+              [dataFields]="['code', 'description']"
             >
-              Edit
+            </xont-ventura-list-prompt>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <xont-ventura-classification-selector
+      #clsExecutive
+      [id]="cls1.ID"
+      [taskCode]="cls1.TaskCode"
+      [classificationType]="cls1.Type"
+      [labelWidth]="cls1.LabelWidth"
+      [enableUserInput]="cls1.EnableUserInput"
+      [codeTextWidth]="cls1.CodeTextWidth"
+      [descriptionTextWidth]="cls1.DescriptionTextWidth"
+      [activeStatus]="cls1.ActiveStatus"
+      [allMandatory]="cls1.AllMandatory"
+      [lastLevelRequired]="cls1.LastLevelRequired"
+    >
+    </xont-ventura-classification-selector>
+
+    <table>
+      <tbody>
+        <tr>
+          <td width="120">&nbsp;</td>
+          <td>
+            <fieldset style="width: 300px">
+              <legend class="GridCaptionstyle">Search type</legend>
+              <table>
+                <tbody>
+                  <tr>
+                    <td>
+                      <span class="Captionstyle">
+                        <input
+                          type="radio"
+                          formControlName="SearchType"
+                          value="startWith"
+                          id="optStartWith"
+                        />
+                        <label for="optStartWith">Start with</label>
+                      </span>
+                    </td>
+                    <td>&nbsp;</td>
+                    <td>
+                      <span class="Captionstyle">
+                        <input
+                          type="radio"
+                          formControlName="SearchType"
+                          value="anyWhere"
+                          id="optAnyWhereInText"
+                        />
+                        <label for="optAnyWhereInText">Anywhere in text</label>
+                      </span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </fieldset>
+          </td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>
+            <span class="Checkboxstyle" style="padding-left: 4px">
+              <input
+                type="checkbox"
+                formControlName="ActiveOnly"
+                id="chkActiveOnly"
+              />
+              <label for="chkActiveOnly">Active only</label>
+            </span>
+          </td>
+        </tr>
+        <tr>
+          <td>&nbsp;</td>
+          <td>
+            <button type="submit" class="MainButtonStyle">List</button>
+            <button type="button" (click)="onReset()" class="MainButtonStyle">
+              Reset
             </button>
           </td>
         </tr>
       </tbody>
     </table>
-  </div>
-
-  <!-- Pagination -->
-  <div
-    class="pagination-container"
-    *ngIf="executiveDataset && executiveDataset.length > 0"
-  >
-    <span style="float: right">
-      <xont-ventura-gridloader
-        #gridLoader
-        (onChange)="gridLoader_OnChange()"
-      ></xont-ventura-gridloader>
-    </span>
-  </div>
+  </form>
 </div>
 
-<!-- Action Buttons -->
-<div class="action-buttons">
-  <button (click)="btnNew_OnClick()" id="btnNew" class="main-button">
-    New
-  </button>
-  <button onclick="closeTab()" class="main-button secondary-button">
-    Exit
-  </button>
+<div>
+  <xont-ventura-gridexport [gridId]="gridID1" [gridName]="gridName1">
+  </xont-ventura-gridexport>
+</div>
+
+@if (noDataFound()) {
+<span class="Labelstyle">No data found for the given criteria</span>
+} @if (isLoading()) {
+<div class="loading-overlay">
+  <div class="spinner-border text-primary" role="status">
+    <span class="visually-hidden">Loading...</span>
+  </div>
+</div>
+}
+
+<div class="DataTableContainer">
+  @if (hasData()) {
+  <table id="tblExecutive" class="DataTableStyle HeaderFreezeStyle">
+    <thead>
+      <tr>
+        <th style="width: 8%" (click)="onSort('ExecutiveCode')">
+          Executive Code @if (sortBy === 'ExecutiveCode') {
+          <span class="sort-icon">{{ sortOrder === "asc" ? "▲" : "▼" }}</span>
+          }
+        </th>
+        <th style="width: 12%" (click)="onSort('ExecutiveName')">
+          Executive Name @if (sortBy === 'ExecutiveName') {
+          <span class="sort-icon">{{ sortOrder === "asc" ? "▲" : "▼" }}</span>
+          }
+        </th>
+        <th style="width: 15%" (click)="onSort('UserProfileName')">
+          User Profile Name @if (sortBy === 'UserProfileName') {
+          <span class="sort-icon">{{ sortOrder === "asc" ? "▲" : "▼" }}</span>
+          }
+        </th>
+        <th style="width: 15%" (click)="onSort('TerritoryName')">
+          Territory @if (sortBy === 'TerritoryName') {
+          <span class="sort-icon">{{ sortOrder === "asc" ? "▲" : "▼" }}</span>
+          }
+        </th>
+        <th style="width: 10%" (click)="onSort('OperationTypeDesc')">
+          Operation Type @if (sortBy === 'OperationTypeDesc') {
+          <span class="sort-icon">{{ sortOrder === "asc" ? "▲" : "▼" }}</span>
+          }
+        </th>
+        <th style="width: 8%">Options</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (item of executiveDataset(); track trackByExecutiveCode($index,
+      item)) {
+      <tr [ngClass]="{ deactiveRow: item.Status === 0 }">
+        <td style="width: 8%">{{ item.ExecutiveCode }}</td>
+        <td style="width: 12%">{{ item.ExecutiveName }}</td>
+        <td style="width: 15%">{{ item.UserProfileName }}</td>
+        <td style="width: 15%">{{ item.TerritoryName }}</td>
+        <td style="width: 10%">{{ item.OperationTypeDesc }}</td>
+        <td style="width: 8%">
+          <a (click)="newBasedOn_OnClick(item)">NewBasedOn |</a>
+          <a (click)="edit_OnClick(item)">Edit</a>
+        </td>
+      </tr>
+      }
+    </tbody>
+    <tfoot>
+      <tr>
+        <td colspan="6">
+          <xont-ventura-gridloader
+            #gridLoader
+            (onChange)="gridLoader_OnChange()"
+          >
+          </xont-ventura-gridloader>
+        </td>
+      </tr>
+    </tfoot>
+  </table>
+  }
+</div>
+
+<div>
+  <button (click)="btnNew_OnClick()" class="MainButtonStyle">New</button>
+  <button (click)="closeTab()" class="MainButtonStyle">Exit</button>
 </div>

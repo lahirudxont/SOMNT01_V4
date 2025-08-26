@@ -1,88 +1,239 @@
-import {
-  Component,
-  Output,
-  EventEmitter,
-  Input,
-  OnChanges,
-  SimpleChanges,
-} from '@angular/core';
+import { Component, Output, EventEmitter, Input, inject } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'xont-ventura-gridloader',
-  templateUrl: './xont-ventura-gridloader.component.html',
+  standalone: true,
+  imports: [FormsModule, CommonModule],
+  template: `
+    <span
+      id="lblTotalAmount"
+      style="padding-right:5px;font-size: 11px;border-width: 0px;"
+      class="Textboxstyle"
+    >
+      {{ recordsCountSummary }}
+    </span>
+
+    <button
+      type="button"
+      name="btnFirst"
+      id="btnFirst"
+      (click)="btnFirst_OnClick()"
+      class="skipfwrdleft"
+      [disabled]="CurrentPage <= 1"
+    ></button>
+
+    <button
+      type="button"
+      name="btnPrev"
+      id="btnPrev"
+      (click)="btnPrev_OnClick()"
+      class="fwrdleft"
+      [disabled]="CurrentPage <= 1"
+    ></button>
+
+    <input
+      name="txtCurrentPage"
+      type="text"
+      [(ngModel)]="CurrentPage"
+      (keypress)="currentPage_OnKeypress($event)"
+      (blur)="currentPage_OnBlur()"
+      [maxlength]="MaxLen"
+      class="Textboxstyle"
+      id="txtCurrentPage"
+      style="width:40px;height:22px"
+    />
+
+    <span class="Captionstyle">&nbsp;OF</span>
+
+    <input
+      name="txtTotalPages"
+      type="text"
+      [ngModel]="TotalPage"
+      disabled
+      id="txtTotalPages"
+      tabindex="-1"
+      class="Textboxstyle"
+      style="width:40px;height:22px"
+    />
+
+    <button
+      type="button"
+      name="btnNext"
+      id="btnNext"
+      (click)="btnNext_OnClick()"
+      class="fwrdright"
+      [disabled]="CurrentPage >= TotalPage"
+    ></button>
+
+    <button
+      type="button"
+      name="btnLast"
+      id="btnLast"
+      (click)="btnLast_OnClick()"
+      class="skipfwrdright"
+      [disabled]="CurrentPage >= TotalPage"
+    ></button>
+  `,
 })
-export class XontVenturaGridLoaderComponent implements OnChanges {
-  @Input()
-  taskCode!: string;
-  @Input() totalRecords = 0;
-  @Output() onChange: EventEmitter<{
-    page: number;
-    start: number;
-    end: number;
-  }> = new EventEmitter();
+export class XontVenturaGridLoaderComponent {
+  private storage = inject(Storage);
 
-  currentPage = 1;
-  totalPages = 0;
-  maxLen = 1;
-  recordsCountSummary = '';
-  private loadSize = 10; // Default
+  public RowStart: number = 0;
+  public RowEnd: number = 0;
+  public CurrentPage: number = 1;
+  public TotalPage: number = 0;
+  private TaskCode: string = '';
+  public MaxLen: number = 1;
+  private LastCurrentPage: number = 1;
+  public recordsCountSummary: string = '';
 
-  ngOnChanges(changes: SimpleChanges): void {
-    if (changes['taskCode'] && this.taskCode) {
-      this.loadSize = this.getLoadSize();
-    }
-    if (changes['totalRecords'] || changes['taskCode']) {
-      this.updatePagination();
-    }
+  @Output()
+  onChange: EventEmitter<void> = new EventEmitter<void>();
+
+  public init(taskCode: string): void {
+    this.TaskCode = taskCode;
   }
 
-  private updatePagination(): void {
-    this.totalPages = Math.ceil(this.totalRecords / this.loadSize);
-    this.maxLen = this.totalPages > 0 ? this.totalPages.toString().length : 1;
-    this.updateSummary();
+  public getPageSize(): number {
+    const data = this.getMasterControlData();
+    return data?.AllowPaging === '1'
+      ? data.PageSize
+      : data?.ExtendedPageSize || 0;
   }
 
-  private updateSummary(): void {
-    const recordsToShow = Math.min(
-      this.currentPage * this.loadSize,
-      this.totalRecords
-    );
-    this.recordsCountSummary = `${recordsToShow} / ${this.totalRecords}`;
+  public getRowStart(): number {
+    if (this.RowStart < 1) {
+      this.RowStart = 1;
+    }
+    return this.RowStart;
+  }
+
+  public getRowEnd(): number {
+    if (this.RowEnd < 1) {
+      if (this.RowStart < 1) {
+        this.RowStart = 1;
+      }
+      const loadSize = this.getLoadSize();
+      this.RowEnd = this.RowStart + loadSize - 1;
+    }
+    return this.RowEnd;
+  }
+
+  public setRowCount(rowTotal: number): void {
+    const loadSize = this.getLoadSize();
+    this.TotalPage = Math.ceil(rowTotal / loadSize);
+    this.MaxLen = this.TotalPage.toString().length;
+    this.showCurrentRowCount(rowTotal);
+  }
+
+  private showCurrentRowCount(rowTotal: number): void {
+    const loadSize = this.getLoadSize();
+
+    let currentTotalRecords: number;
+    if (this.TotalPage === this.CurrentPage) {
+      currentTotalRecords = rowTotal;
+    } else {
+      currentTotalRecords = loadSize * this.CurrentPage;
+    }
+
+    this.recordsCountSummary = `${currentTotalRecords}/${rowTotal}`;
   }
 
   public getLoadSize(): number {
+    const data = this.getMasterControlData();
+    return data?.AllowPaging === '1'
+      ? data.LoadSize
+      : data?.ExtendedPageSize || 0;
+  }
+
+  private getMasterControlData(): any {
     try {
-      const key = (this.taskCode ?? '') + '_MasterControlData';
-      const json = localStorage.getItem(key);
-
-      const data = json ? JSON.parse(json) : null;
-
-      if (data?.AllowPaging === '1') return data.LoadSize;
-      return data?.ExtendedPageSize || 50;
-    } catch {
-      return 50;
+      const storedData = this.storage.getItem(
+        `${this.TaskCode}_MasterControlData`
+      );
+      return storedData ? JSON.parse(storedData) : null;
+    } catch (error) {
+      console.error('Error parsing MasterControlData:', error);
+      return null;
     }
   }
 
-  goToPage(page: number): void {
-    const newPage = Math.max(1, Math.min(page, this.totalPages));
-    if (this.currentPage !== newPage) {
-      this.currentPage = newPage;
-      this.emitChange();
+  private emit(): void {
+    const loadSize = this.getLoadSize();
+    this.RowStart = (this.CurrentPage - 1) * loadSize + 1;
+    this.RowEnd = this.RowStart + loadSize - 1;
+    this.onChange.emit();
+  }
+
+  btnFirst_OnClick(): void {
+    if (this.CurrentPage > 1) {
+      this.CurrentPage = 1;
+      this.LastCurrentPage = 1;
+      this.emit();
     }
   }
 
-  onPageInputBlur(): void {
-    if (this.currentPage < 1 || this.currentPage > this.totalPages) {
-      this.currentPage = 1; // Reset to a valid page
+  btnPrev_OnClick(): void {
+    if (this.CurrentPage > 1) {
+      this.CurrentPage--;
+      this.LastCurrentPage = this.CurrentPage;
+      this.emit();
     }
-    this.goToPage(this.currentPage);
   }
 
-  private emitChange(): void {
-    const start = (this.currentPage - 1) * this.loadSize + 1;
-    const end = start + this.loadSize - 1;
-    this.updateSummary();
-    this.onChange.emit({ page: this.currentPage, start, end });
+  btnNext_OnClick(): void {
+    if (this.CurrentPage < this.TotalPage) {
+      this.CurrentPage++;
+      this.LastCurrentPage = this.CurrentPage;
+      this.emit();
+    }
+  }
+
+  btnLast_OnClick(): void {
+    if (this.CurrentPage < this.TotalPage) {
+      this.CurrentPage = this.TotalPage;
+      this.LastCurrentPage = this.TotalPage;
+      this.emit();
+    }
+  }
+
+  currentPage_OnKeypress(event: KeyboardEvent): boolean {
+    const keyCode = event.keyCode || event.which;
+    return (
+      (keyCode >= 48 && keyCode <= 57) ||
+      keyCode === 8 || // backspace
+      keyCode === 46 || // delete
+      keyCode === 37 || // left arrow
+      keyCode === 39
+    ); // right arrow
+  }
+
+  currentPage_OnBlur(): void {
+    if (this.CurrentPage !== this.LastCurrentPage) {
+      if (this.CurrentPage > 0 && this.CurrentPage <= this.TotalPage) {
+        this.LastCurrentPage = this.CurrentPage;
+        this.emit();
+      } else {
+        this.CurrentPage = this.LastCurrentPage;
+      }
+    }
+  }
+
+  public setCurrentPage(num: number): void {
+    if (num > 0 && num <= this.TotalPage) {
+      this.CurrentPage = num;
+      this.LastCurrentPage = num;
+    }
+  }
+
+  public reset(): void {
+    this.CurrentPage = 1;
+    this.LastCurrentPage = 1;
+    this.TotalPage = 0;
+    this.RowStart = 0;
+    this.RowEnd = 0;
+    this.recordsCountSummary = '';
   }
 }

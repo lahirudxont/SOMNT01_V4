@@ -1,459 +1,1740 @@
-<!-- Busy Indicator -->
-<mat-progress-bar *ngIf="isLoading()" mode="indeterminate"></mat-progress-bar>
+<!-- new.component.html -->
+<div class="container-fluid">
+  <!-- Message Prompt Component -->
+  <xont-ventura-message-prompt #msgPrompt></xont-ventura-message-prompt>
 
-<form [formGroup]="mainForm" (ngSubmit)="onSubmit()">
-  <mat-tab-group dynamicHeight>
-    <!-- Executive Profile Tab -->
-    <mat-tab label="Executive Profile">
-      <div class="tab-content">
-        <div formGroupName="executiveProfile">
-          <mat-form-field appearance="outline">
-            <mat-label>Executive Code</mat-label>
-            <input matInput formControlName="ExecutiveCode" readonly />
-          </mat-form-field>
+  <!-- Loading Spinner -->
+  <div *ngIf="isLoading()" class="d-flex justify-content-center my-3">
+    <mat-spinner diameter="40"></mat-spinner>
+  </div>
 
-          <mat-form-field appearance="outline">
-            <mat-label>Executive Name *</mat-label>
-            <input matInput formControlName="ExecutiveName" required />
-            <mat-error
-              *ngIf="
-                executiveProfileForm.get('ExecutiveName')?.invalid &&
-                executiveProfileForm.get('ExecutiveName')?.touched
-              "
-            >
-              Executive Name is required.
-            </mat-error>
-          </mat-form-field>
+  <!-- Main Form -->
+  <form
+    *ngIf="!isLoading()"
+    [formGroup]="executiveForm"
+    (ngSubmit)="onSubmit()"
+    (keydown.enter)="$event.preventDefault()"
+    novalidate
+  >
+    <ul class="nav nav-tabs" id="executiveTabs" role="tablist">
+      <li class="nav-item" role="presentation">
+        <button
+          class="nav-link active"
+          id="profile-tab"
+          data-bs-toggle="tab"
+          data-bs-target="#ExecutiveProfile"
+          type="button"
+          role="tab"
+          aria-controls="ExecutiveProfile"
+          aria-selected="true"
+        >
+          Profile
+        </button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button
+          class="nav-link"
+          id="stock-tab"
+          data-bs-toggle="tab"
+          data-bs-target="#Stock"
+          type="button"
+          role="tab"
+          aria-controls="Stock"
+          aria-selected="false"
+        >
+          Stock
+        </button>
+      </li>
+      <li class="nav-item" role="presentation" style="display: none">
+        <!-- Assuming Hierarchy is hidden -->
+        <button
+          class="nav-link"
+          id="hierarchy-tab"
+          data-bs-toggle="tab"
+          data-bs-target="#Hierarchy"
+          type="button"
+          role="tab"
+          aria-controls="Hierarchy"
+          aria-selected="false"
+        >
+          Hierarchy
+        </button>
+      </li>
+      <li
+        class="nav-item"
+        role="presentation"
+        *ngIf="returnLocations.length > 0"
+      >
+        <!-- Show Return tab only if locations exist -->
+        <button
+          class="nav-link"
+          id="return-tab"
+          data-bs-toggle="tab"
+          data-bs-target="#Return"
+          type="button"
+          role="tab"
+          aria-controls="Return"
+          aria-selected="false"
+        >
+          Return
+        </button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button
+          class="nav-link"
+          id="other-tab"
+          data-bs-toggle="tab"
+          data-bs-target="#Other"
+          type="button"
+          role="tab"
+          aria-controls="Other"
+          aria-selected="false"
+        >
+          Other
+        </button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button
+          class="nav-link"
+          id="merchandizing-tab"
+          data-bs-toggle="tab"
+          data-bs-target="#Merchandizing"
+          type="button"
+          role="tab"
+          aria-controls="Merchandizing"
+          aria-selected="false"
+        >
+          Merchandizing
+        </button>
+      </li>
+    </ul>
 
-          <!-- Operation Type Prompt -->
-          <div class="form-row">
-            <mat-form-field appearance="outline">
-              <mat-label>Operation Type *</mat-label>
-              <input
-                matInput
-                formControlName="OperationType"
-                readonly
-                required
-              />
-              <button
-                mat-icon-button
-                matSuffix
-                type="button"
-                (click)="openOperationTypePrompt()"
-              >
-                <mat-icon>search</mat-icon>
-              </button>
-              <mat-error
-                *ngIf="
-                  executiveProfileForm.get('OperationType')?.invalid &&
-                  executiveProfileForm.get('OperationType')?.touched
-                "
-              >
-                Operation Type is required.
-              </mat-error>
-            </mat-form-field>
-            <mat-form-field appearance="outline">
-              <mat-label>Description</mat-label>
-              <input matInput formControlName="OperationTypeDesc" readonly />
-            </mat-form-field>
-          </div>
-
-          <!-- User Profile Prompt -->
-          <div class="form-row">
-            <mat-form-field appearance="outline">
-              <mat-label>User Profile *</mat-label>
-              <input matInput formControlName="UserProfile" readonly required />
-              <button
-                mat-icon-button
-                matSuffix
-                type="button"
-                (click)="openUserProfilePrompt()"
-              >
-                <mat-icon>search</mat-icon>
-              </button>
-              <mat-error
-                *ngIf="
-                  executiveProfileForm.get('UserProfile')?.invalid &&
-                  executiveProfileForm.get('UserProfile')?.touched
-                "
-              >
-                User Profile is required.
-              </mat-error>
-            </mat-form-field>
-            <mat-form-field appearance="outline">
-              <mat-label>Name</mat-label>
-              <input matInput formControlName="UserProfileName" readonly />
-            </mat-form-field>
-          </div>
-
-          <!-- Incentive Group Prompt -->
-          <div class="form-row">
-            <mat-form-field appearance="outline">
-              <mat-label>Incentive Group *</mat-label>
-              <input
-                matInput
-                formControlName="IncentiveGroup"
-                readonly
-                required
-              />
-              <button
-                mat-icon-button
-                matSuffix
-                type="button"
-                (click)="openIncentiveGroupPrompt()"
-              >
-                <mat-icon>search</mat-icon>
-              </button>
-              <mat-error
-                *ngIf="
-                  executiveProfileForm.get('IncentiveGroup')?.invalid &&
-                  executiveProfileForm.get('IncentiveGroup')?.touched
-                "
-              >
-                Incentive Group is required.
-              </mat-error>
-            </mat-form-field>
-            <mat-form-field appearance="outline">
-              <mat-label>Name</mat-label>
-              <input matInput formControlName="IncentiveGroupName" readonly />
-            </mat-form-field>
-          </div>
-
-          <!-- Retailer Type -->
-          <mat-form-field appearance="outline">
-            <mat-label>Retailer Type</mat-label>
-            <mat-select formControlName="RetailerType">
-              <mat-option value="0">Create New & Edit Retailers</mat-option>
-              <mat-option value="1">View Details Only</mat-option>
-              <mat-option value="2">Edit Details Only</mat-option>
-              <mat-option value="3">Create New & Edit Profile Info</mat-option>
-              <mat-option value="4">Create New Only</mat-option>
-              <mat-option value="9">Do not Allow</mat-option>
-            </mat-select>
-          </mat-form-field>
-
-          <!-- Date of Birth -->
-          <mat-form-field appearance="outline">
-            <mat-label>Date of Birth</mat-label>
-            <input
-              matInput
-              [matDatepicker]="dobPicker"
-              formControlName="DateOfBirth"
-            />
-            <mat-datepicker-toggle
-              matSuffix
-              [for]="dobPicker"
-            ></mat-datepicker-toggle>
-            <mat-datepicker #dobPicker></mat-datepicker>
-          </mat-form-field>
-
-          <!-- Status Checkbox -->
-          <mat-checkbox formControlName="Status">Status</mat-checkbox>
-
-          <!-- Add other fields from the Executive Profile section -->
-        </div>
-      </div>
-    </mat-tab>
-
-    <!-- Stock Tab -->
-    <mat-tab label="Stock">
-      <div class="tab-content">
-        <div formGroupName="stock">
-          <!-- Stock Territory Prompt -->
-          <div class="form-row">
-            <mat-form-field appearance="outline">
-              <mat-label>Stock Territory *</mat-label>
-              <input
-                matInput
-                formControlName="StockTerritory"
-                readonly
-                required
-              />
-              <button
-                mat-icon-button
-                matSuffix
-                type="button"
-                (click)="openStockTerritoryPrompt()"
-              >
-                <mat-icon>search</mat-icon>
-              </button>
-              <mat-error
-                *ngIf="
-                  stockForm.get('StockTerritory')?.invalid &&
-                  stockForm.get('StockTerritory')?.touched
-                "
-              >
-                Stock Territory is required.
-              </mat-error>
-            </mat-form-field>
-            <mat-form-field appearance="outline">
-              <mat-label>Description</mat-label>
-              <input matInput formControlName="StockTerritoryDesc" readonly />
-            </mat-form-field>
-          </div>
-
-          <!-- Default Stock Location Prompt -->
-          <div class="form-row">
-            <mat-form-field appearance="outline">
-              <mat-label>Warehouse *</mat-label>
-              <input
-                matInput
-                formControlName="DefStockWarehouse"
-                readonly
-                required
-              />
-              <button
-                mat-icon-button
-                matSuffix
-                type="button"
-                (click)="openDefStockWarehousePrompt()"
-              >
-                <mat-icon>search</mat-icon>
-              </button>
-              <mat-error
-                *ngIf="
-                  stockForm.get('DefStockWarehouse')?.invalid &&
-                  stockForm.get('DefStockWarehouse')?.touched
-                "
-              >
-                Warehouse is required.
-              </mat-error>
-            </mat-form-field>
-            <mat-form-field appearance="outline">
-              <mat-label>Location *</mat-label>
-              <input
-                matInput
-                formControlName="DefStockLocation"
-                readonly
-                required
-              />
-              <button
-                mat-icon-button
-                matSuffix
-                type="button"
-                (click)="openDefStockLocationPrompt()"
-              >
-                <mat-icon>search</mat-icon>
-              </button>
-              <mat-error
-                *ngIf="
-                  stockForm.get('DefStockLocation')?.invalid &&
-                  stockForm.get('DefStockLocation')?.touched
-                "
-              >
-                Location is required.
-              </mat-error>
-            </mat-form-field>
-            <mat-form-field appearance="outline">
-              <mat-label>Description</mat-label>
-              <input matInput formControlName="DefStockLocationDes" readonly />
-            </mat-form-field>
-          </div>
-
-          <!-- Add other fields from the Stock section -->
-        </div>
-      </div>
-    </mat-tab>
-
-    <!-- Other Tab -->
-    <mat-tab label="Other">
-      <div class="tab-content">
-        <div formGroupName="other">
-          <mat-form-field appearance="outline">
-            <mat-label>Commission Percentage</mat-label>
-            <input
-              matInput
-              type="number"
-              formControlName="CommissionPercentage"
-              min="0"
-              max="100"
-            />
-            <mat-error
-              *ngIf="otherForm.get('CommissionPercentage')?.errors?.['min'] || otherForm.get('CommissionPercentage')?.errors?.['max']"
-            >
-              Commission must be between 0 and 100.
-            </mat-error>
-          </mat-form-field>
-
-          <mat-checkbox formControlName="chkOnlineExecutive"
-            >Online Executive</mat-checkbox
-          >
-
-          <!-- Add other fields from the Other section -->
-        </div>
-      </div>
-    </mat-tab>
-
-    <!-- Merchandising Tab -->
-    <mat-tab label="Merchandising">
-      <div class="tab-content">
-        <div formGroupName="merchandizing">
-          <mat-checkbox formControlName="chkAutoTMRouteCode"
-            >Auto TM Route Code</mat-checkbox
-          >
-          <!-- Add other fields from the Merchandising section -->
-        </div>
-      </div>
-    </mat-tab>
-
-    <!-- Hierarchy Tab -->
-    <mat-tab label="Hierarchy" *ngIf="isHierarchyTabVisible()">
-      <div class="tab-content">
-        <div formGroupName="hierarchy">
-          <!-- Hierarchy Group Prompt -->
-          <div class="form-row">
-            <mat-form-field appearance="outline">
-              <mat-label>Hierarchy Group *</mat-label>
-              <input
-                matInput
-                formControlName="HierarchyGroup"
-                readonly
-                required
-              />
-              <button
-                mat-icon-button
-                matSuffix
-                type="button"
-                (click)="openHierarchyGroupPrompt()"
-              >
-                <mat-icon>search</mat-icon>
-              </button>
-              <mat-error
-                *ngIf="
-                  hierarchyForm.get('HierarchyGroup')?.invalid &&
-                  hierarchyForm.get('HierarchyGroup')?.touched
-                "
-              >
-                Hierarchy Group is required.
-              </mat-error>
-            </mat-form-field>
-            <mat-form-field appearance="outline">
-              <mat-label>Description</mat-label>
-              <input matInput formControlName="HierarchyGroupDesc" readonly />
-              <!-- Assuming you have this -->
-            </mat-form-field>
-          </div>
-
-          <!-- Parent Hierarchy Prompt -->
-          <div class="form-row">
-            <mat-form-field appearance="outline">
-              <mat-label>Parent Hierarchy *</mat-label>
-              <input
-                matInput
-                formControlName="ParentHierarchy"
-                readonly
-                required
-              />
-              <button
-                mat-icon-button
-                matSuffix
-                type="button"
-                (click)="openParentHierarchyPrompt()"
-              >
-                <mat-icon>search</mat-icon>
-              </button>
-              <mat-error
-                *ngIf="
-                  hierarchyForm.get('ParentHierarchy')?.invalid &&
-                  hierarchyForm.get('ParentHierarchy')?.touched
-                "
-              >
-                Parent Hierarchy is required.
-              </mat-error>
-            </mat-form-field>
-            <mat-form-field appearance="outline">
-              <mat-label>Description</mat-label>
-              <input matInput formControlName="ParentHierarchyDesc" readonly />
-              <!-- Assuming you have this -->
-            </mat-form-field>
-          </div>
-
-          <!-- Add other fields from the Hierarchy section -->
-        </div>
-
-        <!-- Hierarchy Details Table -->
-        <h3>Hierarchy Details</h3>
-        <div class="table-container">
-          <table
-            mat-table
-            [dataSource]="hierarchyDetailsFormArray.controls"
-            formArrayName="hierarchyDetails"
-          >
-            <ng-container matColumnDef="BusinessUnit">
-              <th mat-header-cell *matHeaderCellDef>Business Unit</th>
-              <td
-                mat-cell
-                *matCellDef="let element; let i = index"
-                [formGroupName]="i"
-              >
-                <mat-form-field appearance="outline">
-                  <input matInput formControlName="BusinessUnit" required />
-                  <mat-error
-                    *ngIf="
-                      getHierarchyDetailControl(i, 'BusinessUnit')?.invalid &&
-                      getHierarchyDetailControl(i, 'BusinessUnit')?.touched
-                    "
+    <div class="tab-content" id="executiveTabContent">
+      <!-- Profile Tab -->
+      <div
+        class="tab-pane fade show active"
+        id="ExecutiveProfile"
+        role="tabpanel"
+        aria-labelledby="profile-tab"
+        formGroupName="profile"
+      >
+        <div class="p-3">
+          <table class="table table-borderless">
+            <tbody>
+              <tr>
+                <td width="140">
+                  <label for="txtExecutiveCode" class="Captionstyle"
+                    >Executive Code</label
                   >
-                    BU is required.
-                  </mat-error>
-                </mat-form-field>
-              </td>
-            </ng-container>
-
-            <ng-container matColumnDef="ExecutiveCode">
-              <th mat-header-cell *matHeaderCellDef>Executive Code</th>
-              <td
-                mat-cell
-                *matCellDef="let element; let i = index"
-                [formGroupName]="i"
-              >
-                <input matInput formControlName="ExecutiveCode" />
-              </td>
-            </ng-container>
-
-            <!-- Add other columns as needed -->
-
-            <ng-container matColumnDef="actions">
-              <th mat-header-cell *matHeaderCellDef>Actions</th>
-              <td mat-cell *matCellDef="let element; let i = index">
-                <button
-                  mat-icon-button
-                  color="warn"
-                  type="button"
-                  (click)="removeHierarchyDetail(i)"
-                >
-                  <mat-icon>delete</mat-icon>
-                </button>
-              </td>
-            </ng-container>
-
-            <tr
-              mat-header-row
-              *matHeaderRowDef="displayedHierarchyColumns"
-            ></tr>
-            <tr
-              mat-row
-              *matRowDef="let row; columns: displayedHierarchyColumns"
-            ></tr>
+                </td>
+                <td>
+                  <input
+                    type="text"
+                    id="txtExecutiveCode"
+                    class="Textboxstyle"
+                    style="width: 120px"
+                    formControlName="ExecutiveCode"
+                    maxlength="10"
+                    [readonly]="isEditMode()"
+                  />
+                  <div
+                    *ngIf="
+                      profile.get('ExecutiveCode')?.invalid &&
+                      profile.get('ExecutiveCode')?.touched
+                    "
+                    class="text-danger small"
+                  >
+                    <div
+                      *ngIf="profile.get('ExecutiveCode')?.errors?.['required']"
+                    >
+                      *
+                    </div>
+                    <div
+                      *ngIf="profile.get('ExecutiveCode')?.errors?.['pattern']"
+                    >
+                      Invalid Entry (Alphanumeric, _, -)
+                    </div>
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td width="140">
+                  <label for="txtExecutiveName" class="Captionstyle"
+                    >Executive Name</label
+                  >
+                </td>
+                <td>
+                  <input
+                    type="text"
+                    id="txtExecutiveName"
+                    class="Textboxstyle"
+                    style="width: 320px"
+                    formControlName="ExecutiveName"
+                    maxlength="50"
+                  />
+                  <div
+                    *ngIf="
+                      profile.get('ExecutiveName')?.invalid &&
+                      profile.get('ExecutiveName')?.touched
+                    "
+                    class="text-danger small"
+                  >
+                    <div
+                      *ngIf="profile.get('ExecutiveName')?.errors?.['required']"
+                    >
+                      *
+                    </div>
+                    <div
+                      *ngIf="profile.get('ExecutiveName')?.errors?.['pattern']"
+                    >
+                      Invalid Entry (&, #, ", ;, ' not allowed)
+                    </div>
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td width="140">
+                  <label class="Captionstyle">Executive Group</label>
+                </td>
+                <td>
+                  <select
+                    class="Dropdownboxstyle"
+                    style="width: 120px"
+                    formControlName="ExecutiveGroup"
+                  >
+                    <option value="1">Group 1</option>
+                    <!-- Default/Static for now, populate dynamically if needed -->
+                    <!-- Add other options dynamically if executivegroup array is used -->
+                  </select>
+                </td>
+              </tr>
+              <tr>
+                <td width="140">
+                  <label for="lpmtOptType" class="Captionstyle"
+                    >Operation Type *</label
+                  >
+                </td>
+                <td>
+                  <xont-ventura-list-prompt
+                    id="lpmtOptType"
+                    name="lpmtOptType"
+                    #lpmtOptType
+                    [maxLengths]="[2, 50]"
+                    [inputWidths]="[120, 320]"
+                    [gridHeaders]="['Code', 'Description']"
+                    [gridFields]="['Code', 'Description']"
+                    [mandatory]="true"
+                    [strict]="true"
+                    (onDataBind)="lpmtOptType_DataBind()"
+                    formControlName="OperationType"
+                    [modelProps]="['OperationType', 'OperationTypeDesc']"
+                    [dataFields]="['Code', 'Description']"
+                    (onChanged)="lpmtOptType_Changed($event)"
+                  ></xont-ventura-list-prompt>
+                  <div
+                    *ngIf="
+                      profile.get('OperationType')?.invalid &&
+                      profile.get('OperationType')?.touched
+                    "
+                    class="text-danger small"
+                  >
+                    <div
+                      *ngIf="profile.get('OperationType')?.errors?.['required']"
+                    >
+                      *
+                    </div>
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td width="140">
+                  <label for="lpmtIncentiveGroup" class="Captionstyle"
+                    >Incentive Group</label
+                  >
+                </td>
+                <td>
+                  <xont-ventura-list-prompt
+                    id="lpmtIncentiveGroup"
+                    name="lpmtIncentiveGroup"
+                    #lpmtIncentiveGroup
+                    [maxLengths]="[2, 50]"
+                    [inputWidths]="[120, 320]"
+                    [gridHeaders]="['Code', 'Description']"
+                    [gridFields]="['Code', 'Description']"
+                    [mandatory]="false"
+                    [strict]="true"
+                    (onDataBind)="lpmtIncentiveGroup_DataBind()"
+                    formControlName="IncentiveGroup"
+                    [modelProps]="['IncentiveGroup', 'IncentiveGroupDesc']"
+                    [dataFields]="['Code', 'Description']"
+                  ></xont-ventura-list-prompt>
+                </td>
+              </tr>
+              <tr>
+                <td width="140">
+                  <label for="txtUserName" class="Captionstyle"
+                    >User Name</label
+                  >
+                </td>
+                <td>
+                  <input
+                    type="text"
+                    id="txtUserName"
+                    class="Textboxstyle"
+                    style="width: 120px"
+                    formControlName="UserName"
+                    maxlength="20"
+                  />
+                  <div
+                    *ngIf="
+                      profile.get('UserName')?.invalid &&
+                      profile.get('UserName')?.touched
+                    "
+                    class="text-danger small"
+                  >
+                    <div *ngIf="profile.get('UserName')?.errors?.['pattern']">
+                      Invalid Entry (Alphanumeric only)
+                    </div>
+                    <div
+                      *ngIf="profile.get('UserName')?.errors?.['serverError']"
+                    >
+                      {{ profile.get('UserName')?.errors?.['serverError'] }}
+                    </div>
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td width="140">
+                  <label for="txtPassword" class="Captionstyle">Password</label>
+                </td>
+                <td>
+                  <input
+                    type="password"
+                    id="txtPassword"
+                    class="Textboxstyle"
+                    style="width: 150px"
+                    formControlName="Password"
+                    maxlength="20"
+                  />
+                  <!-- Error handled by group validator -->
+                </td>
+              </tr>
+              <tr>
+                <td width="140">
+                  <label for="txtConfirmPassword" class="Captionstyle"
+                    >Confirm Password</label
+                  >
+                </td>
+                <td>
+                  <input
+                    type="password"
+                    id="txtConfirmPassword"
+                    class="Textboxstyle"
+                    style="width: 150px"
+                    formControlName="ConfirmPassword"
+                    maxlength="20"
+                  />
+                  <div
+                    *ngIf="profile.errors?.['mismatch'] && (profile.get('Password')?.touched || profile.get('ConfirmPassword')?.touched)"
+                    class="text-danger small"
+                  >
+                    Passwords do not match.
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td width="140">
+                  <label for="txtPasswordExpiry" class="Captionstyle"
+                    >Password Expiry</label
+                  >
+                </td>
+                <td>
+                  <input
+                    type="text"
+                    id="txtPasswordExpiry"
+                    class="Textboxstyle"
+                    style="width: 120px"
+                    formControlName="PasswordExpiry"
+                    maxlength="10"
+                    readonly
+                  />
+                  <xont-ventura-datepicker
+                    id="datepickerID1"
+                    (onDateSelect)="onPasswordExpirySelect($event)"
+                  ></xont-ventura-datepicker>
+                </td>
+              </tr>
+              <tr>
+                <td width="140">
+                  <label class="Captionstyle">Password Reset</label>
+                </td>
+                <td>
+                  <div class="form-check">
+                    <input
+                      class="form-check-input"
+                      type="checkbox"
+                      id="chkPasswordReset"
+                      formControlName="chkPasswordReset"
+                    />
+                    <label
+                      class="form-check-label Captionstyle"
+                      for="chkPasswordReset"
+                      >Force Password Reset on Next Login</label
+                    >
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td width="140">
+                  <label class="Captionstyle">User Locked</label>
+                </td>
+                <td>
+                  <div class="form-check">
+                    <input
+                      class="form-check-input"
+                      type="checkbox"
+                      id="chkUserLocked"
+                      formControlName="chkUserLocked"
+                    />
+                    <label
+                      class="form-check-label Captionstyle"
+                      for="chkUserLocked"
+                      >Lock User Account</label
+                    >
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td width="140">
+                  <label class="Captionstyle">Authority Level</label>
+                </td>
+                <td>
+                  <select
+                    class="Dropdownboxstyle"
+                    style="width: 80px"
+                    formControlName="AuthorityLevel"
+                  >
+                    <option
+                      *ngFor="let level of [1, 2, 3, 4, 5, 6, 7, 8, 9]"
+                      [value]="level"
+                    >
+                      {{ level }}
+                    </option>
+                  </select>
+                </td>
+              </tr>
+              <tr>
+                <td width="140">
+                  <label class="Captionstyle">Retailer Maintenance</label>
+                </td>
+                <td>
+                  <select
+                    class="Dropdownboxstyle"
+                    style="width: 300px"
+                    formControlName="RetailerType"
+                  >
+                    <option value="0">Create New & Edit Retailers</option>
+                    <option value="1">View Details Only</option>
+                    <option value="2">Edit Details Only</option>
+                    <option value="3">Create New & Edit Profile Info</option>
+                    <option value="4">Create New Only</option>
+                    <option value="9">Do not Allow</option>
+                  </select>
+                </td>
+              </tr>
+              <tr>
+                <td width="140">
+                  <label for="txtIMEINo" class="Captionstyle"
+                    >Device IMEI Number</label
+                  >
+                </td>
+                <td>
+                  <input
+                    type="text"
+                    id="txtIMEINo"
+                    class="Textboxstyle"
+                    style="width: 230px"
+                    formControlName="IMEINo"
+                    maxlength="20"
+                  />
+                  <button
+                    type="button"
+                    class="btn btn-outline-secondary btn-sm ms-2"
+                    (click)="ValidateIMEINo()"
+                  >
+                    Validate
+                  </button>
+                  <div
+                    *ngIf="(profile.get('IMEINo')?.invalid || profile.errors?.['imeiRequired']) && profile.get('IMEINo')?.touched"
+                    class="text-danger small"
+                  >
+                    IMEI Number is required when 'Validate' is checked.
+                  </div>
+                </td>
+              </tr>
+              <!-- <tr> Checkbox for Validate IMEI is integrated into the button action -->
+              <tr>
+                <td width="140">
+                  <label for="txtMobileNumbers" class="Captionstyle"
+                    >Mobile Numbers</label
+                  >
+                </td>
+                <td>
+                  <input
+                    type="text"
+                    id="txtMobileNumbers"
+                    class="Textboxstyle"
+                    style="width: 300px"
+                    formControlName="MobileNumbers"
+                    maxlength="100"
+                  />
+                  <span class="Captionstyle ms-2">(Semicolon Separated)</span>
+                  <div
+                    *ngIf="
+                      profile.get('MobileNumbers')?.invalid &&
+                      profile.get('MobileNumbers')?.touched
+                    "
+                    class="text-danger small"
+                  >
+                    <div
+                      *ngIf="profile.get('MobileNumbers')?.errors?.['pattern']"
+                    >
+                      Invalid Entry (Numbers and ; only)
+                    </div>
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td width="140">
+                  <label for="txtEmailAddress" class="Captionstyle"
+                    >Email Address</label
+                  >
+                </td>
+                <td>
+                  <textarea
+                    id="txtEmailAddress"
+                    class="Textboxstyle"
+                    style="width: 400px"
+                    formControlName="EmailAddress"
+                    maxlength="132"
+                    rows="2"
+                  ></textarea>
+                  <span class="Captionstyle ms-2">(Semicolon Separated)</span>
+                  <div
+                    *ngIf="
+                      profile.get('EmailAddress')?.invalid &&
+                      profile.get('EmailAddress')?.touched
+                    "
+                    class="text-danger small"
+                  >
+                    <div
+                      *ngIf="profile.get('EmailAddress')?.errors?.['pattern']"
+                    >
+                      Invalid Entry (Check email format)
+                    </div>
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td width="140">
+                  <label for="lpmtUserProfile" class="Captionstyle"
+                    >User Profile</label
+                  >
+                </td>
+                <td>
+                  <xont-ventura-list-prompt
+                    id="lpmtUserProfile"
+                    name="lpmtUserProfile"
+                    #lpmtUserProfile
+                    [maxLengths]="[10, 50]"
+                    [inputWidths]="[120, 320]"
+                    [gridHeaders]="['Code', 'Description']"
+                    [gridFields]="['Code', 'Description']"
+                    [mandatory]="false"
+                    [strict]="true"
+                    (onDataBind)="lpmtUserProfile_DataBind()"
+                    formControlName="UserProfile"
+                    [modelProps]="['UserProfile', 'UserProfileName']"
+                    [dataFields]="['Code', 'Description']"
+                  ></xont-ventura-list-prompt>
+                </td>
+              </tr>
+              <tr>
+                <td width="140">
+                  <label for="txtJoiningDate" class="Captionstyle"
+                    >Joining Date</label
+                  >
+                </td>
+                <td>
+                  <input
+                    type="text"
+                    id="txtJoiningDate"
+                    class="Textboxstyle"
+                    style="width: 120px"
+                    formControlName="JoiningDate"
+                    maxlength="10"
+                    readonly
+                  />
+                  <xont-ventura-datepicker
+                    id="datepickerID2"
+                    (onDateSelect)="onJoiningDateSelect($event)"
+                  ></xont-ventura-datepicker>
+                </td>
+              </tr>
+              <tr>
+                <td width="140">
+                  <label for="txtTerminationDate" class="Captionstyle"
+                    >Termination Date</label
+                  >
+                </td>
+                <td>
+                  <input
+                    type="text"
+                    id="txtTerminationDate"
+                    class="Textboxstyle"
+                    style="width: 120px"
+                    formControlName="TerminationDate"
+                    maxlength="10"
+                    readonly
+                  />
+                  <xont-ventura-datepicker
+                    id="datepickerID3"
+                    (onDateSelect)="onTerminationDateSelect($event)"
+                  ></xont-ventura-datepicker>
+                </td>
+              </tr>
+              <tr>
+                <td width="140"><label class="Captionstyle">Active</label></td>
+                <td>
+                  <div class="form-check">
+                    <input
+                      class="form-check-input"
+                      type="checkbox"
+                      id="chkActive"
+                      formControlName="chkActive"
+                    />
+                    <label class="form-check-label Captionstyle" for="chkActive"
+                      >Is Active</label
+                    >
+                  </div>
+                </td>
+              </tr>
+              <!-- Hidden fields -->
+              <tr style="display: none">
+                <td><input type="hidden" formControlName="TimeStamp" /></td>
+                <td>
+                  <input
+                    type="hidden"
+                    formControlName="IsValidateOperationType"
+                  />
+                </td>
+              </tr>
+            </tbody>
           </table>
         </div>
-        <button mat-raised-button type="button" (click)="addHierarchyDetail()">
-          Add Row
-        </button>
       </div>
-    </mat-tab>
-  </mat-tab-group>
 
-  <!-- Action Buttons -->
-  <div class="action-buttons">
-    <button
-      mat-raised-button
-      color="primary"
-      type="submit"
-      [disabled]="isLoading()"
-    >
-      OK
-    </button>
-    <button mat-raised-button type="button" (click)="onCancel()">Cancel</button>
-  </div>
-</form>
+      <!-- Stock Tab -->
+      <div
+        class="tab-pane fade"
+        id="Stock"
+        role="tabpanel"
+        aria-labelledby="stock-tab"
+        formGroupName="stock"
+      >
+        <div class="p-3">
+          <table class="table table-borderless">
+            <tbody>
+              <tr>
+                <td width="140">
+                  <label for="lpmtStockTerritory" class="Captionstyle"
+                    >Stock Territory</label
+                  >
+                </td>
+                <td>
+                  <xont-ventura-list-prompt
+                    id="lpmtStockTerritory"
+                    name="lpmtStockTerritory"
+                    [maxLengths]="[4, 50]"
+                    [inputWidths]="[120, 320]"
+                    [gridHeaders]="['Code', 'Description']"
+                    [gridFields]="[
+                      'MasterGroupValue',
+                      'MasterGroupValueDescription'
+                    ]"
+                    [mandatory]="false"
+                    type="Territory"
+                    status="Active"
+                    [strict]="true"
+                    formControlName="StockTerritory"
+                    [modelProps]="['StockTerritory', 'StockTerritoryDesc']"
+                    [dataFields]="[
+                      'MasterGroupValue',
+                      'MasterGroupValueDescription'
+                    ]"
+                    (onChanged)="LoadReturnLocations()"
+                  ></xont-ventura-list-prompt>
+                </td>
+              </tr>
+              <tr>
+                <td width="140">
+                  <label for="lpmtSalesLocation" class="Captionstyle"
+                    >Sales Location</label
+                  >
+                </td>
+                <td>
+                  <!-- removed (onDataBind)="lpmtSalesLocation_DataBind()" -->
+                  <xont-ventura-list-prompt
+                    id="lpmtSalesLocation"
+                    name="lpmtSalesLocation"
+                    #lpmtSalesLocation
+                    [maxLengths]="[4, 4, 50]"
+                    [inputWidths]="[120, 120, 320]"
+                    [gridHeaders]="[
+                      'Warehouse Code',
+                      'Location Code',
+                      'Description'
+                    ]"
+                    [gridFields]="[
+                      'Warehouse Code',
+                      'Location Code',
+                      'Description'
+                    ]"
+                    [mandatory]="false"
+                    [strict]="true"
+                    [control]="stock"
+                    [modelProps]="[
+                      'DefSalesWarehouse',
+                      'DefSalesLocation',
+                      'DefSalesLocationDes'
+                    ]"
+                    [dataFields]="[
+                      'Warehouse Code',
+                      'Location',
+                      'Code',
+                      'Description'
+                    ]"
+                  ></xont-ventura-list-prompt>
+                </td>
+              </tr>
+              <tr>
+                <td width="140">
+                  <label for="lpmtStockLocation" class="Captionstyle"
+                    >Stock Location</label
+                  >
+                </td>
+                <td>
+                  <!-- removed  (onDataBind)="lpmtStockLocation_DataBind()" -->
+                  <xont-ventura-list-prompt
+                    id="lpmtStockLocation"
+                    name="lpmtStockLocation"
+                    #lpmtStockLocation
+                    [maxLengths]="[4, 4, 50]"
+                    [inputWidths]="[120, 120, 320]"
+                    [gridHeaders]="[
+                      'Warehouse Code',
+                      'Location Code',
+                      'Description'
+                    ]"
+                    [gridFields]="[
+                      'Warehouse Code',
+                      'Location Code',
+                      'Description'
+                    ]"
+                    [mandatory]="false"
+                    [strict]="true"
+                    [control]="stock"
+                    [modelProps]="[
+                      'DefStockWarehouse',
+                      'DefStockLocation',
+                      'DefStockLocationDes'
+                    ]"
+                    [dataFields]="[
+                      'Warehouse Code',
+                      'Location',
+                      'Code',
+                      'Description'
+                    ]"
+                  ></xont-ventura-list-prompt>
+                </td>
+              </tr>
+              <tr>
+                <td width="140">
+                  <label for="lpmtReturnLocation" class="Captionstyle"
+                    >Return Location</label
+                  >
+                </td>
+                <td>
+                  <!-- removed (onDataBind)="lpmtReturnLocation_DataBind()" -->
+                  <xont-ventura-list-prompt
+                    id="lpmtReturnLocation"
+                    name="lpmtReturnLocation"
+                    #lpmtReturnLocation
+                    [maxLengths]="[4, 4, 50]"
+                    [inputWidths]="[120, 120, 320]"
+                    [gridHeaders]="[
+                      'Warehouse Code',
+                      'Location Code',
+                      'Description'
+                    ]"
+                    [gridFields]="[
+                      'Warehouse Code',
+                      'Location Code',
+                      'Description'
+                    ]"
+                    [mandatory]="false"
+                    [strict]="true"
+                    [control]="stock"
+                    [modelProps]="[
+                      'DefReturnWarehouse',
+                      'DefReturnLocation',
+                      'DefReturnLocationDes'
+                    ]"
+                    [dataFields]="[
+                      'Warehouse Code',
+                      'Location',
+                      'Code',
+                      'Description'
+                    ]"
+                  ></xont-ventura-list-prompt>
+                </td>
+              </tr>
+              <tr>
+                <td width="140">
+                  <label for="lpmtInspectionLocation" class="Captionstyle"
+                    >Inspection Location</label
+                  >
+                </td>
+                <td>
+                  <!-- removed (onDataBind)="lpmtInspectionLocation_DataBind()" -->
+                  <xont-ventura-list-prompt
+                    id="lpmtInspectionLocation"
+                    name="lpmtInspectionLocation"
+                    #lpmtInspectionLocation
+                    [maxLengths]="[4, 4, 50]"
+                    [inputWidths]="[120, 120, 320]"
+                    [gridHeaders]="[
+                      'Warehouse Code',
+                      'Location Code',
+                      'Description'
+                    ]"
+                    [gridFields]="[
+                      'Warehouse Code',
+                      'Location Code',
+                      'Description'
+                    ]"
+                    [mandatory]="false"
+                    [strict]="true"
+                    [control]="stock"
+                    [modelProps]="[
+                      'DefInspectionWarehouse',
+                      'DefInspectionLocation',
+                      'DefInspectionLocationDes'
+                    ]"
+                    [dataFields]="[
+                      'Warehouse Code',
+                      'Location',
+                      'Code',
+                      'Description'
+                    ]"
+                  ></xont-ventura-list-prompt>
+                </td>
+              </tr>
+              <tr>
+                <td width="140">
+                  <label for="lpmtSpecialLocation" class="Captionstyle"
+                    >Special Location</label
+                  >
+                </td>
+                <td>
+                  <!-- removed (onDataBind)="lpmtSpecialLocation_DataBind()" -->
+                  <xont-ventura-list-prompt
+                    id="lpmtSpecialLocation"
+                    name="lpmtSpecialLocation"
+                    #lpmtSpecialLocation
+                    [maxLengths]="[4, 4, 50]"
+                    [inputWidths]="[120, 120, 320]"
+                    [gridHeaders]="[
+                      'Warehouse Code',
+                      'Location Code',
+                      'Description'
+                    ]"
+                    [gridFields]="[
+                      'Warehouse Code',
+                      'Location Code',
+                      'Description'
+                    ]"
+                    [mandatory]="false"
+                    [strict]="true"
+                    [control]="stock"
+                    [modelProps]="[
+                      'DefSpecialWarehouse',
+                      'DefSpecialLocation',
+                      'DefSpecialLocationDes'
+                    ]"
+                    [dataFields]="[
+                      'Warehouse Code',
+                      'Location',
+                      'Code',
+                      'Description'
+                    ]"
+                  ></xont-ventura-list-prompt>
+                </td>
+              </tr>
+              <tr>
+                <td width="140">
+                  <label for="lpmtUnloadingLocation" class="Captionstyle"
+                    >Unloading Location</label
+                  >
+                </td>
+                <td>
+                  <xont-ventura-list-prompt
+                    id="lpmtUnloadingLocation"
+                    name="lpmtUnloadingLocation"
+                    #lpmtUnloadingLocation
+                    [maxLengths]="[4, 4, 50]"
+                    [inputWidths]="[120, 120, 320]"
+                    [gridHeaders]="[
+                      'Warehouse Code',
+                      'Location Code',
+                      'Description'
+                    ]"
+                    [gridFields]="[
+                      'Warehouse Code',
+                      'Location Code',
+                      'Description'
+                    ]"
+                    [mandatory]="false"
+                    [strict]="true"
+                    (onDataBind)="lpmtUnloadingLocation_DataBind()"
+                    [control]="stock"
+                    [modelProps]="[
+                      'DefUnloadingWarehouse',
+                      'DefUnloadingLocation',
+                      'DefUnloadingLocationDes'
+                    ]"
+                    [dataFields]="[
+                      'Warehouse Code',
+                      'Location',
+                      'Code',
+                      'Description'
+                    ]"
+                  ></xont-ventura-list-prompt>
+                </td>
+              </tr>
+              <tr>
+                <td width="140">
+                  <label for="lpmtSalesCategory" class="Captionstyle"
+                    >Sales Category</label
+                  >
+                </td>
+                <td>
+                  <!-- removed                     (onDataBind)="lpmtSalesCategory_DataBind()" -->
+                  <xont-ventura-list-prompt
+                    id="lpmtSalesCategory"
+                    name="lpmtSalesCategory"
+                    #lpmtSalesCategory
+                    [maxLengths]="[4, 50]"
+                    [inputWidths]="[120, 320]"
+                    [gridHeaders]="['Code', 'Description']"
+                    [gridFields]="['Code', 'Description']"
+                    [mandatory]="false"
+                    [strict]="true"
+                    [control]="stock"
+                    [modelProps]="['SalesCategoryCode', 'SalesCategoryCodeDes']"
+                    [dataFields]="['Code', 'Description']"
+                  ></xont-ventura-list-prompt>
+                </td>
+              </tr>
+              <tr>
+                <td width="140">
+                  <label for="lpmtDefEmptyCategory" class="Captionstyle"
+                    >Def. Empty Category</label
+                  >
+                </td>
+                <td>
+                  <!-- removed   (onDataBind)="lpmtDefEmptyCategory_DataBind()" -->
+                  <xont-ventura-list-prompt
+                    id="lpmtDefEmptyCategory"
+                    name="lpmtDefEmptyCategory"
+                    #lpmtDefEmptyCategory
+                    [maxLengths]="[4, 50]"
+                    [inputWidths]="[120, 320]"
+                    [gridHeaders]="['Code', 'Description']"
+                    [gridFields]="['Code', 'Description']"
+                    [mandatory]="false"
+                    [strict]="true"
+                    [control]="stock"
+                    [modelProps]="[
+                      'DefEmptyTransactionCategory',
+                      'DefEmptyTransactionCategoryDesc'
+                    ]"
+                    [dataFields]="['Code', 'Description']"
+                  ></xont-ventura-list-prompt>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+
+          <!-- Geo Classification Selector -->
+          <xont-ventura-classification-selector
+            #clsGeo
+            [id]="cls3.ID"
+            [taskCode]="cls3.TaskCode"
+            [classificationType]="cls3.Type"
+            [labelWidth]="cls3.LabelWidth"
+            [enableUserInput]="cls3.EnableUserInput"
+            [codeTextWidth]="cls3.CodeTextWidth"
+            [descriptionTextWidth]="cls3.DescriptionTextWidth"
+            [activeStatus]="cls3.ActiveStatus"
+            [allMandatory]="cls3.AllMandatory"
+            [lastLevelRequired]="cls3.LastLevelRequired"
+            (onChange)="clsGeo_SelectionChange()"
+          ></xont-ventura-classification-selector>
+        </div>
+      </div>
+
+      <!-- Hierarchy Tab (Hidden) -->
+      <div
+        class="tab-pane fade"
+        id="Hierarchy"
+        role="tabpanel"
+        aria-labelledby="hierarchy-tab"
+      >
+        <!-- Content if needed, currently hidden -->
+      </div>
+
+      <!-- Return Tab -->
+      <div
+        class="tab-pane fade"
+        id="Return"
+        role="tabpanel"
+        aria-labelledby="return-tab"
+      >
+        <div class="p-3">
+          <div formArrayName="returnLocations">
+            <div
+              *ngFor="
+                let locationGroup of returnLocations.controls;
+                let i = index
+              "
+              [formGroupName]="i"
+            >
+              <table class="table table-borderless">
+                <tbody>
+                  <tr>
+                    <td width="140">
+                      <label class="Captionstyle">{{
+                        locationGroup.get("ReturnTypeDescription")?.value
+                      }}</label>
+                    </td>
+                    <td>
+                      <select
+                        class="Dropdownboxstyle"
+                        style="width: 300px"
+                        formControlName="LocationCode"
+                        (change)="ddlReturnType_SelectedIndexChanged(i, $event)"
+                      >
+                        <option value="">--Select--</option>
+                        <option
+                          *ngFor="
+                            let option of locationGroup.get('DropDownData')
+                              ?.value
+                          "
+                          [value]="option.LocationCode"
+                        >
+                          {{ option.LocationCode }} - {{ option.LocationDesc }}
+                        </option>
+                      </select>
+                    </td>
+                    <td>
+                      <input
+                        type="text"
+                        class="Textboxstyle"
+                        style="width: 200px"
+                        formControlName="WarehouseName"
+                        readonly
+                      />
+                    </td>
+                    <td>
+                      <input
+                        type="text"
+                        class="Textboxstyle"
+                        style="width: 200px"
+                        formControlName="LocationName"
+                        readonly
+                      />
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Other Tab -->
+      <div
+        class="tab-pane fade"
+        id="Other"
+        role="tabpanel"
+        aria-labelledby="other-tab"
+        formGroupName="other"
+      >
+        <div class="p-3">
+          <table class="table table-borderless">
+            <tbody>
+              <tr>
+                <td width="145">
+                  <label class="Captionstyle">Credit Limit Validation</label>
+                </td>
+                <td>
+                  <div class="form-check">
+                    <input
+                      class="form-check-input"
+                      type="checkbox"
+                      id="chkCreditLimitValidation"
+                      formControlName="chkCreditLimitValidation"
+                    />
+                    <label
+                      class="form-check-label Captionstyle"
+                      for="chkCreditLimitValidation"
+                      >Enable</label
+                    >
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td width="145">
+                  <label for="txtCreditLimit" class="Captionstyle"
+                    >Credit Limit</label
+                  >
+                </td>
+                <td>
+                  <input
+                    type="text"
+                    id="txtCreditLimit"
+                    class="Textboxstyle"
+                    style="width: 120px; text-align: right"
+                    formControlName="CreditLimit"
+                    maxlength="20"
+                  />
+                  <div
+                    *ngIf="
+                      other.get('CreditLimit')?.invalid &&
+                      other.get('CreditLimit')?.touched
+                    "
+                    class="text-danger small"
+                  >
+                    <div *ngIf="other.get('CreditLimit')?.errors?.['pattern']">
+                      Invalid Entry (Numbers, commas, dots)
+                    </div>
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td width="145">
+                  <label for="txtCommissionPercentage" class="Captionstyle"
+                    >Commission Percentage</label
+                  >
+                </td>
+                <td>
+                  <input
+                    type="number"
+                    id="txtCommissionPercentage"
+                    class="Textboxstyle"
+                    style="width: 120px; text-align: right"
+                    formControlName="CommissionPercentage"
+                    min="0"
+                    max="100"
+                    step="0.01"
+                    (input)="validateCommissionPercentage()"
+                  />
+                  <div
+                    *ngIf="
+                      (other.get('CommissionPercentage')?.invalid ||
+                        !other.get('CommissionPercentagevalid')?.value) &&
+                      other.get('CommissionPercentage')?.touched
+                    "
+                    class="text-danger small"
+                  >
+                    <div
+                      *ngIf="other.get('CommissionPercentage')?.errors?.['invalidCommission'] || !other.get('CommissionPercentagevalid')?.value"
+                    >
+                      Invalid Entry (0-100)
+                    </div>
+                  </div>
+                </td>
+                <td width="120"></td>
+                <td width="100">
+                  <label for="txtApplicationType" class="Captionstyle"
+                    >Application Type</label
+                  >
+                </td>
+                <td>
+                  <input
+                    type="text"
+                    id="txtApplicationType"
+                    class="Textboxstyle"
+                    style="width: 120px"
+                    formControlName="ApplicationType"
+                    readonly
+                  />
+                </td>
+              </tr>
+              <tr>
+                <td width="145">
+                  <label for="txtLastGRNNo" class="Captionstyle"
+                    >Last GRN No</label
+                  >
+                </td>
+                <td>
+                  <input
+                    type="text"
+                    id="txtLastGRNNo"
+                    class="Textboxstyle"
+                    style="width: 120px; text-align: right"
+                    formControlName="LastGRNNo"
+                    maxlength="10"
+                  />
+                  <div
+                    *ngIf="
+                      other.get('LastGRNNo')?.invalid &&
+                      other.get('LastGRNNo')?.touched
+                    "
+                    class="text-danger small"
+                  >
+                    <div *ngIf="other.get('LastGRNNo')?.errors?.['pattern']">
+                      Invalid Entry (Numbers only)
+                    </div>
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td width="145">
+                  <label for="txtCashLimit" class="Captionstyle"
+                    >Cash Limit</label
+                  >
+                </td>
+                <td>
+                  <input
+                    type="text"
+                    id="txtCashLimit"
+                    class="Textboxstyle"
+                    style="width: 120px; text-align: right"
+                    formControlName="CashLimit"
+                    maxlength="20"
+                  />
+                  <div
+                    *ngIf="
+                      other.get('CashLimit')?.invalid &&
+                      other.get('CashLimit')?.touched
+                    "
+                    class="text-danger small"
+                  >
+                    <div *ngIf="other.get('CashLimit')?.errors?.['pattern']">
+                      Invalid Entry (Numbers, commas, dots)
+                    </div>
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td width="145">
+                  <label for="txtLastRetailerNo" class="Captionstyle"
+                    >Last Retailer No</label
+                  >
+                </td>
+                <td>
+                  <input
+                    type="text"
+                    id="txtLastRetailerNo"
+                    class="Textboxstyle"
+                    style="width: 120px; text-align: right"
+                    formControlName="LastRetailerNo"
+                    maxlength="10"
+                  />
+                  <div
+                    *ngIf="
+                      other.get('LastRetailerNo')?.invalid &&
+                      other.get('LastRetailerNo')?.touched
+                    "
+                    class="text-danger small"
+                  >
+                    <div
+                      *ngIf="other.get('LastRetailerNo')?.errors?.['pattern']"
+                    >
+                      Invalid Entry (Numbers only)
+                    </div>
+                  </div>
+                </td>
+                <td width="120"></td>
+                <td width="100">
+                  <label for="txtLastOrderNo" class="Captionstyle"
+                    >Last Order No</label
+                  >
+                </td>
+                <td>
+                  <input
+                    type="text"
+                    id="txtLastOrderNo"
+                    class="Textboxstyle"
+                    style="width: 150px; text-align: right"
+                    formControlName="LastOrderNo"
+                    maxlength="10"
+                  />
+                  <div
+                    *ngIf="
+                      other.get('LastOrderNo')?.invalid &&
+                      other.get('LastOrderNo')?.touched
+                    "
+                    class="text-danger small"
+                  >
+                    <div *ngIf="other.get('LastOrderNo')?.errors?.['pattern']">
+                      Invalid Entry (Numbers only)
+                    </div>
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td width="145">
+                  <label for="txtSurveyRecurrence" class="Captionstyle"
+                    >Survey Recurrence</label
+                  >
+                </td>
+                <td>
+                  <input
+                    type="text"
+                    id="txtSurveyRecurrence"
+                    class="Textboxstyle"
+                    style="width: 120px"
+                    formControlName="SurveyRecurrence"
+                  />
+                </td>
+              </tr>
+              <tr>
+                <td width="145">
+                  <label for="txtLastSurveyDate" class="Captionstyle"
+                    >Last Survey Date</label
+                  >
+                </td>
+                <td>
+                  <input
+                    type="text"
+                    id="txtLastSurveyDate"
+                    class="Textboxstyle"
+                    style="width: 120px"
+                    formControlName="LastSurveyDate"
+                    maxlength="10"
+                    readonly
+                  />
+                  <xont-ventura-datepicker
+                    id="datepickerID4"
+                    (onDateSelect)="onLastSurveyDateSelect($event)"
+                  ></xont-ventura-datepicker>
+                </td>
+              </tr>
+              <tr>
+                <td width="145">
+                  <label for="txtSurveyActiveDate" class="Captionstyle"
+                    >Survey Active Date</label
+                  >
+                </td>
+                <td>
+                  <input
+                    type="text"
+                    id="txtSurveyActiveDate"
+                    class="Textboxstyle"
+                    style="width: 120px"
+                    formControlName="SurveyActiveDate"
+                    maxlength="10"
+                    readonly
+                  />
+                  <xont-ventura-datepicker
+                    id="datepickerID5"
+                    (onDateSelect)="onSurveyActiveDateSelect($event)"
+                  ></xont-ventura-datepicker>
+                </td>
+              </tr>
+              <tr>
+                <td width="145">
+                  <label class="Captionstyle">Allow Price Change</label>
+                </td>
+                <td>
+                  <div class="form-check">
+                    <input
+                      class="form-check-input"
+                      type="checkbox"
+                      id="chkAllowPriceChange"
+                      formControlName="chkAllowPriceChange"
+                    />
+                    <label
+                      class="form-check-label Captionstyle"
+                      for="chkAllowPriceChange"
+                      >Enable</label
+                    >
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td width="145">
+                  <label class="Captionstyle">Cash Customer Only</label>
+                </td>
+                <td>
+                  <div class="form-check">
+                    <input
+                      class="form-check-input"
+                      type="checkbox"
+                      id="chkCashCustomerOnly"
+                      formControlName="chkCashCustomerOnly"
+                    />
+                    <label
+                      class="form-check-label Captionstyle"
+                      for="chkCashCustomerOnly"
+                      >Enable</label
+                    >
+                  </div>
+                </td>
+                <td width="120"></td>
+                <td width="100">
+                  <label class="Captionstyle">GIS Executive</label>
+                </td>
+                <td>
+                  <div class="form-check">
+                    <input
+                      class="form-check-input"
+                      type="checkbox"
+                      id="chkGISExecutive"
+                      formControlName="chkGISExecutive"
+                    />
+                    <label
+                      class="form-check-label Captionstyle"
+                      for="chkGISExecutive"
+                      >Enable</label
+                    >
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td width="145">
+                  <label for="txtParentExecutiveCode" class="Captionstyle"
+                    >Parent Executive Code</label
+                  >
+                </td>
+                <td>
+                  <input
+                    type="text"
+                    id="txtParentExecutiveCode"
+                    class="Textboxstyle"
+                    style="width: 120px"
+                    formControlName="ParentExecutiveCode"
+                    maxlength="10"
+                  />
+                </td>
+                <td width="120"></td>
+                <td width="100">
+                  <label for="txtExecutiveType" class="Captionstyle"
+                    >Executive Type</label
+                  >
+                </td>
+                <td>
+                  <input
+                    type="text"
+                    id="txtExecutiveType"
+                    class="Textboxstyle"
+                    style="width: 120px"
+                    formControlName="ExecutiveType"
+                    readonly
+                  />
+                </td>
+              </tr>
+              <tr>
+                <td width="145">
+                  <label for="lpmtParameterGroup" class="Captionstyle"
+                    >Hierarchy Group</label
+                  >
+                </td>
+                <td>
+                  <xont-ventura-list-prompt
+                    id="lpmtParameterGroup"
+                    name="lpmtParameterGroup"
+                    #lpmtParameterGroup
+                    [maxLengths]="[10, 50]"
+                    [inputWidths]="[120, 320]"
+                    [gridHeaders]="['Parameter', 'Description']"
+                    [gridFields]="['Parameter', 'ParameterDescription']"
+                    [mandatory]="false"
+                    [strict]="true"
+                    (onDataBind)="lpmtParameterGroup_DataBind()"
+                    formControlName="Parameter"
+                    [modelProps]="['Parameter', 'ParameterDescription']"
+                    [dataFields]="['Parameter', 'ParameterDescription']"
+                  ></xont-ventura-list-prompt>
+                </td>
+                <td width="120"></td>
+                <td width="100">
+                  <label for="txtMappingExecutiveCode" class="Captionstyle"
+                    >Mapping Executive Code</label
+                  >
+                </td>
+                <td>
+                  <input
+                    type="text"
+                    id="txtMappingExecutiveCode"
+                    class="Textboxstyle"
+                    style="width: 120px"
+                    formControlName="MappingExecutiveCode"
+                    maxlength="10"
+                  />
+                </td>
+              </tr>
+              <tr>
+                <td width="145">
+                  <label class="Captionstyle">Online Executive</label>
+                </td>
+                <td>
+                  <div class="form-check">
+                    <input
+                      class="form-check-input"
+                      type="checkbox"
+                      id="chkOnlineExecutive"
+                      formControlName="chkOnlineExecutive"
+                    />
+                    <label
+                      class="form-check-label Captionstyle"
+                      for="chkOnlineExecutive"
+                      >Enable</label
+                    >
+                  </div>
+                </td>
+                <td width="120"></td>
+                <td width="100">
+                  <label for="lpmtLoginUser" class="Captionstyle"
+                    >App Login User</label
+                  >
+                </td>
+                <td>
+                  <xont-ventura-list-prompt
+                    id="lpmtLoginUser"
+                    name="lpmtLoginUser"
+                    #lpmtLoginUser
+                    [maxLengths]="[4, 50]"
+                    [inputWidths]="[120, 320]"
+                    [gridHeaders]="['User Name', 'User Full Name']"
+                    [gridFields]="['AppUserName', 'UserFullName']"
+                    status="All"
+                    [mandatory]="false"
+                    [strict]="false"
+                    (onDataBind)="lpmtLoginUser_Databind()"
+                    [control]="other"
+                    [modelProps]="['AppUserName', 'UserFullName']"
+                  ></xont-ventura-list-prompt>
+                </td>
+              </tr>
+              <tr>
+                <td width="145">
+                  <label for="txtAppUserName" class="Captionstyle"
+                    >App User Name</label
+                  >
+                </td>
+                <td>
+                  <input
+                    type="text"
+                    id="txtAppUserName"
+                    class="Textboxstyle"
+                    style="width: 120px"
+                    formControlName="AppUserName"
+                    readonly
+                  />
+                </td>
+                <td width="120"></td>
+                <td width="100">
+                  <label for="txtUserFullName" class="Captionstyle"
+                    >User Full Name</label
+                  >
+                </td>
+                <td>
+                  <input
+                    type="text"
+                    id="txtUserFullName"
+                    class="Textboxstyle"
+                    style="width: 250px"
+                    formControlName="UserFullName"
+                    readonly
+                  />
+                </td>
+              </tr>
+              <tr>
+                <td width="145">
+                  <label for="lpmtCostCenter" class="Captionstyle"
+                    >Cost Center</label
+                  >
+                </td>
+                <td colspan="4">
+                  <!-- Spanning columns -->
+                  <!-- removed                     (onDataBind)="lpmtCostCenter_DataBind()" -->
+                  <xont-ventura-list-prompt
+                    id="lpmtCostCenter"
+                    name="lpmtCostCenter"
+                    #lpmtCostCenter
+                    [maxLengths]="[10, 50]"
+                    [inputWidths]="[100, 250]"
+                    [gridHeaders]="['Code', 'Description']"
+                    [gridFields]="['Code', 'Description']"
+                    [mandatory]="false"
+                    [strict]="true"
+                    formControlName="CostCenterCode"
+                    [modelProps]="['CostCenterCode', 'CostCenterDesc']"
+                    [dataFields]="['Code', 'Description']"
+                  ></xont-ventura-list-prompt>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Merchandizing Tab -->
+      <div
+        class="tab-pane fade"
+        id="Merchandizing"
+        role="tabpanel"
+        aria-labelledby="merchandizing-tab"
+        formGroupName="merchandizing"
+      >
+        <div class="p-3">
+          <table class="table table-borderless">
+            <tbody>
+              <tr>
+                <td>
+                  <div class="form-check">
+                    <input
+                      class="form-check-input"
+                      type="checkbox"
+                      id="chkAutoTMRouteCode"
+                      formControlName="chkAutoTMRouteCode"
+                      (change)="chkAutoTMRouteCode_CheckedChanged()"
+                    />
+                    <label
+                      class="form-check-label Captionstyle"
+                      for="chkAutoTMRouteCode"
+                      >Auto TM Route Code</label
+                    >
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td width="140">
+                  <label for="txtTMRouteCodePrefix" class="Captionstyle"
+                    >TM Route Code Prefix</label
+                  >
+                </td>
+                <td>
+                  <input
+                    type="text"
+                    id="txtTMRouteCodePrefix"
+                    class="Textboxstyle"
+                    style="width: 120px"
+                    formControlName="TMRouteCodePrefix"
+                    maxlength="10"
+                    [readonly]="!merchandizing.get('chkAutoTMRouteCode')?.value"
+                  />
+                  <div
+                    *ngIf="
+                      merchandizing.get('TMRouteCodePrefix')?.invalid &&
+                      merchandizing.get('TMRouteCodePrefix')?.touched
+                    "
+                    class="text-danger small"
+                  >
+                    <div
+                      *ngIf="merchandizing.get('TMRouteCodePrefix')?.errors?.['pattern']"
+                    >
+                      Invalid Entry (Alphanumeric, _, -)
+                    </div>
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td width="140">
+                  <label for="txtNextTMRouteNo" class="Captionstyle"
+                    >Next TM Route No</label
+                  >
+                </td>
+                <td>
+                  <input
+                    type="text"
+                    id="txtNextTMRouteNo"
+                    class="Textboxstyle"
+                    style="width: 120px; text-align: right"
+                    formControlName="NextTMRouteNo"
+                    readonly
+                  />
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <!-- End of Tab Content -->
+
+    <!-- Classification Selectors Outside Tabs -->
+    <div class="mt-3">
+      <xont-ventura-classification-selector
+        #clsExecutive
+        [id]="cls1.ID"
+        [taskCode]="cls1.TaskCode"
+        [classificationType]="cls1.Type"
+        [labelWidth]="cls1.LabelWidth"
+        [enableUserInput]="cls1.EnableUserInput"
+        [codeTextWidth]="cls1.CodeTextWidth"
+        [descriptionTextWidth]="cls1.DescriptionTextWidth"
+        [activeStatus]="cls1.ActiveStatus"
+        [allMandatory]="cls1.AllMandatory"
+        [lastLevelRequired]="cls1.LastLevelRequired"
+      ></xont-ventura-classification-selector>
+    </div>
+
+    <div class="mt-3">
+      <xont-ventura-classification-selector
+        #clsMarketingHierarchy
+        [id]="cls2.ID"
+        [taskCode]="cls2.TaskCode"
+        [classificationType]="cls2.Type"
+        [labelWidth]="cls2.LabelWidth"
+        [enableUserInput]="cls2.EnableUserInput"
+        [codeTextWidth]="cls2.CodeTextWidth"
+        [descriptionTextWidth]="cls2.DescriptionTextWidth"
+        [activeStatus]="cls2.ActiveStatus"
+        [allMandatory]="cls2.AllMandatory"
+        [lastLevelRequired]="cls2.LastLevelRequired"
+      ></xont-ventura-classification-selector>
+    </div>
+
+    <!-- Hidden TimeStamp for Other -->
+    <div style="display: none">
+      <input
+        type="hidden"
+        formGroupName="other"
+        formControlName="HierarchyTimeStamp"
+      />
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="mt-3">
+      <button
+        type="submit"
+        class="btn btn-primary MainButtonStyle"
+        [disabled]="isLoading()"
+      >
+        Save
+      </button>
+      <button
+        type="button"
+        class="btn btn-secondary MainButtonStyle ms-2"
+        (click)="btnCancel_Click()"
+      >
+        Exit
+      </button>
+    </div>
+  </form>
+</div>

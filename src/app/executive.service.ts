@@ -1,86 +1,280 @@
 import { Injectable } from '@angular/core';
-import {
-  HttpClient,
-  HttpErrorResponse,
-  HttpHeaders,
-} from '@angular/common/http';
+import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
+import { CommonService } from './common.service';
 import { Observable, Subject, throwError } from 'rxjs';
-import { catchError } from 'rxjs/operators';
-
-// Define interfaces
-export interface Executive {
-  executiveCode: string;
-  executiveName: string;
-  userProfileName: string;
-  territoryName: string;
-  operationTypeDesc: string;
-  status: number; // For deactiveRow
-}
-
-export interface SelectionCriteria {
-  ExecutiveCode: string;
-  ExecutiveName: string;
-  TerritoryCode: string;
-  TerritoryDesc: string;
-  OperationType: string;
-  OperationTypeDesc: string;
-  Executive1: string;
-  Executive2: string;
-  Executive3: string;
-  Executive4: string;
-  Executive5: string;
-  SearchType: 'startWith' | 'anyWhere';
-  ActiveOnly: boolean;
-  FirstRow: number;
-  LastRow: number;
-  Collapsed: boolean;
-}
-
-export interface SelectedClassification {
-  ParameterCode: string;
-  ParameterValue: string;
-}
-
-export interface GetAllExecutiveResponse {
-  executives: Executive[];
-  totalCount: number;
-}
+import { catchError, map } from 'rxjs/operators';
 
 @Injectable({
   providedIn: 'root',
 })
 export class ExecutiveService {
-  private readonly API_BASE_URL = '/api/SOMNT01';
+  constructor(private http: HttpClient, private commanService: CommonService) {}
+
   private componentMethodCallSource = new Subject<any>();
   componentMethodCalled$ = this.componentMethodCallSource.asObservable();
 
-  constructor(private http: HttpClient) {}
-
-  private getApiUrl(endpoint: string): string {
-    return `${this.API_BASE_URL}/${endpoint}`;
-  }
-
-  public getAllExecutive(data: {
-    SelectionCriteria: SelectionCriteria;
-    SelectedClassifications: SelectedClassification[];
-  }): Observable<GetAllExecutiveResponse> {
-    const url = this.getApiUrl('GetAllExecutive');
-    const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+  public getAllExecutive(data: any): Observable<any> {
+    const headers = new HttpHeaders({
+      'Content-Type': 'application/json',
+    });
 
     return this.http
-      .post<GetAllExecutiveResponse>(url, data, { headers })
-      .pipe(catchError(this.handleError));
+      .post(this.siteName() + '/api/SOMNT01/GetAllExecutive', data, { headers })
+      .pipe(catchError((error) => this.handleError(error)));
   }
 
   public getOptTypePrompt(): Observable<any> {
-    const url = this.getApiUrl('GetOperationTypePrompt');
-    return this.http.get<any>(url).pipe(catchError(this.handleError));
+    return this.http
+      .get(this.siteName() + '/api/SOMNT01/GetOperationTypePrompt')
+      .pipe(catchError((error) => this.handleError(error)));
   }
 
-  private handleError(error: HttpErrorResponse) {
-    console.error('An error occurred:', error);
-    return throwError(
-      () => new Error(`Error Code: ${error.status}\nMessage: ${error.message}`)
-    );
+  public getNewOptTypePrompt(): Observable<any> {
+    return this.http
+      .get(this.siteName() + '/api/SOMNT01/GetOperationTypePromptForEdit')
+      .pipe(catchError((error) => this.handleError(error)));
+  }
+
+  //V3038
+  public GetAppLoginUser(): Observable<any> {
+    return this.http
+      .get(this.siteName() + '/api/SOMNT01/GetAppLoginUser')
+      .pipe(catchError((error) => this.handleError(error)));
+  }
+
+  //V3038
+  public GetParameterGroup(): Observable<any> {
+    return this.http
+      .get(this.siteName() + '/api/SOMNT01/GetParameterGroup')
+      .pipe(catchError((error) => this.handleError(error)));
+  }
+
+  public getIncentiveGroupPrompt(): Observable<any> {
+    return this.http
+      .get(this.siteName() + '/api/SOMNT01/GetIncentiveGroupPromptForEdit')
+      .pipe(catchError((error) => this.handleError(error)));
+  }
+
+  public getUserProfilePrompt(): Observable<any> {
+    return this.http
+      .get(this.siteName() + '/api/SOMNT01/GetUserProfilePromptForEdit')
+      .pipe(catchError((error) => this.handleError(error)));
+  }
+
+  public getSalesLocation(data: string): Observable<any> {
+    return this.http
+      .get(
+        this.siteName() +
+          '/api/SOMNT01/GetDefSalesLocation?StockTerritoryCode=' +
+          data
+      )
+      .pipe(catchError((error) => this.handleError(error)));
+  }
+
+  public getStockLocation(data: string): Observable<any> {
+    return this.http
+      .get(
+        this.siteName() +
+          '/api/SOMNT01/GetDefStockLocation?StockTerritoryCode=' +
+          data
+      )
+      .pipe(catchError((error) => this.handleError(error)));
+  }
+
+  public getDamageLocation(data: string): Observable<any> {
+    return this.http
+      .get(
+        this.siteName() +
+          '/api/SOMNT01/GetDefReturnLocation?StockTerritoryCode=' +
+          data
+      )
+      .pipe(catchError((error) => this.handleError(error)));
+  }
+
+  public getInceptionLocation(data: string): Observable<any> {
+    return this.http
+      .get(
+        this.siteName() +
+          '/api/SOMNT01/GetDefInspectionLocation?StockTerritoryCode=' +
+          data
+      )
+      .pipe(catchError((error) => this.handleError(error)));
+  }
+
+  public getSpecialLocation(data: string): Observable<any> {
+    return this.http
+      .get(
+        this.siteName() +
+          '/api/SOMNT01/GetDefSpecialLocation?StockTerritoryCode=' +
+          data
+      )
+      .pipe(catchError((error) => this.handleError(error)));
+  }
+
+  //V3012 S api call to get data from
+  public getUnloadingLocation(data: string): Observable<any> {
+    return this.http
+      .get(
+        this.siteName() +
+          '/api/SOMNT01/GetDefUnloadingLocation?StockTerritoryCode=' +
+          data
+      )
+      .pipe(catchError((error) => this.handleError(error)));
+  }
+  //V3012 E
+
+  public getDefSaleCategory(
+    data: string,
+    TerritoryCode: string
+  ): Observable<any> {
+    return this.http
+      .get(
+        this.siteName() +
+          '/api/SOMNT01/GetDefSalesCategoryCode?OperationType=' +
+          data.trim() +
+          '&TerritoryCode=' +
+          TerritoryCode.trim()
+      )
+      .pipe(catchError((error) => this.handleError(error)));
+  }
+
+  public getDefEmptyCategory(
+    data: string,
+    TerritoryCode: string
+  ): Observable<any> {
+    return this.http
+      .get(
+        this.siteName() +
+          '/api/SOMNT01/GetDefEmptyCategoryCode?OperationType=' +
+          data.trim() +
+          '&TerritoryCode=' +
+          TerritoryCode.trim()
+      )
+      .pipe(catchError((error) => this.handleError(error)));
+  }
+
+  public getHierarchyGroup(): Observable<any> {
+    return this.http
+      .get(this.siteName() + '/api/SOMNT01/GetHierarchyGroup')
+      .pipe(catchError((error) => this.handleError(error)));
+  }
+
+  public GetHierarchyType(): Observable<any> {
+    return this.http
+      .get(this.siteName() + '/api/SOMNT01/GetHierarchyType')
+      .pipe(catchError((error) => this.handleError(error)));
+  }
+
+  public getParentHierarchy(data: string): Observable<any> {
+    return this.http
+      .get(
+        this.siteName() + '/api/SOMNT01/GetParentGroup?HierarchyGroup=' + data
+      )
+      .pipe(catchError((error) => this.handleError(error)));
+  }
+
+  public getParentExecutive(
+    data: string,
+    ExecutiveCode: string
+  ): Observable<any> {
+    return this.http
+      .get(
+        this.siteName() +
+          '/api/SOMNT01/GetParentExecutive?ParentGroup=' +
+          data.trim() +
+          '&ExecutiveCode=' +
+          ExecutiveCode.trim()
+      )
+      .pipe(catchError((error) => this.handleError(error)));
+  }
+
+  //V3010
+  public getParentTypeExecutive(
+    ExecutiveType: string,
+    ExecutiveClsType: string
+  ): Observable<any> {
+    return this.http
+      .get(
+        this.siteName() +
+          '/api/SOMNT01/GetParentTypeExecutive?executiveType=' +
+          ExecutiveType.trim() +
+          '&Executiveclstype=' +
+          ExecutiveClsType.trim()
+      )
+      .pipe(catchError((error) => this.handleError(error)));
+  }
+
+  public getExecutiveTypeHierarchyLevel(
+    executiveType: string
+  ): Observable<any> {
+    return this.http
+      .get(
+        this.siteName() +
+          '/api/SOMNT01/GetExecutiveTypeHierarchyLevel?executiveType=' +
+          executiveType
+      )
+      .pipe(catchError((error) => this.handleError(error)));
+  }
+  //V3010
+
+  public getExecutiveGroups(): Observable<any> {
+    return this.http
+      .get(this.siteName() + '/api/SOMNT01/GetExecutiveGroups')
+      .pipe(catchError((error) => this.handleError(error)));
+  }
+  public getExecutiveData(ExecutiveCode: any) {
+    return this.http
+      .get(
+        this.siteName() +
+          '/api/SOMNT01/GetExecutiveData?ExecutiveCode=' +
+          ExecutiveCode
+      )
+      .pipe(catchError((error) => this.handleError(error)));
+  }
+  public getNextTMRouteNo(ExecutiveCode: any) {
+    return this.http
+      .get(
+        this.siteName() +
+          '/api/SOMNT01/GetNextTMRouteNo?ExecutiveCode=' +
+          ExecutiveCode
+      )
+      .pipe(catchError((error) => this.handleError(error)));
+  }
+  public getExecutiveClassificationData(ExecutiveCode: any, groupType: any) {
+    return this.http
+      .get(
+        this.siteName() +
+          '/api/SOMNT01/GetExecutiveClassificationData?ExecutiveCode=' +
+          ExecutiveCode.trim() +
+          '&GroupType=' +
+          groupType.trim()
+      )
+      .pipe(catchError((error) => this.handleError(error)));
+  }
+  public getReturnLocations(ExecutiveCode: any, StockTerritory: any) {
+    return this.http
+      .get(
+        this.siteName() +
+          '/api/SOMNT01/getAllReturnLocationList?StockTerritory=' +
+          StockTerritory.trim() +
+          '&ExecutiveCode=' +
+          ExecutiveCode.trim()
+      )
+
+      .pipe(catchError((error) => this.handleError(error)));
+  }
+  public saveExecutiveData(ExecutiveData: any) {
+    return this.http
+      .get(this.siteName() + 'api/SOMNT01/SaveAll', ExecutiveData)
+
+      .pipe(catchError((error) => this.handleError(error)));
+  }
+  private handleError(error: any): Observable<never> {
+    this.componentMethodCallSource.next(error);
+    return throwError(() => error);
+  }
+
+  private siteName(): string {
+    return this.commanService.getAPIPrefix();
   }
 }
