@@ -40,12 +40,12 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 interface Executive {
-  ExecutiveCode: string;
-  ExecutiveName: string;
-  UserProfileName: string;
-  TerritoryName: string;
-  OperationTypeDesc: string;
-  Status: number;
+  executiveCode: string;
+  executiveName: string;
+  userProfileName: string;
+  territoryName: string;
+  operationTypeDesc: string;
+  status: number;
 }
 
 @Component({
@@ -268,9 +268,9 @@ export class ListComponent implements OnInit, AfterViewInit {
     localStorage.setItem(
       'SOMNT01_PageInit',
       JSON.stringify({
-        Mode: mode,
-        ExecutiveCode: item?.ExecutiveCode?.trim() || '',
-        ExecutiveName: item?.ExecutiveName?.trim() || '',
+        mode: mode,
+        executiveCode: item?.executiveCode?.trim() || '',
+        executiveName: item?.executiveName?.trim() || '',
       })
     );
     this.router.navigate(['new']);
@@ -285,7 +285,7 @@ export class ListComponent implements OnInit, AfterViewInit {
   }
 
   trackByExecutiveCode(index: number, item: Executive) {
-    return item.ExecutiveCode;
+    return item.executiveCode;
   }
 
   closeTab() {

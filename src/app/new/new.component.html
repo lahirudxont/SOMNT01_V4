@@ -12,6 +12,75 @@
     (keydown.enter)="$event.preventDefault()"
     novalidate
   >
+    <div class="p-3">
+      <table class="table table-borderless">
+        <tbody>
+          <tr>
+            <td width="140">
+              <label for="txtExecutiveCode" class="Captionstyle"
+                >Executive Code</label
+              >
+            </td>
+            <td>
+              <input
+                type="text"
+                id="txtExecutiveCode"
+                class="Textboxstyle"
+                style="width: 120px"
+                formControlName="ExecutiveCode"
+                maxlength="10"
+                [readonly]="isEditMode()"
+              />
+              <div
+                *ngIf="
+                  profile.get('ExecutiveCode')?.invalid &&
+                  profile.get('ExecutiveCode')?.touched
+                "
+                class="text-danger small"
+              >
+                <div *ngIf="profile.get('ExecutiveCode')?.errors?.['required']">
+                  *
+                </div>
+                <div *ngIf="profile.get('ExecutiveCode')?.errors?.['pattern']">
+                  Invalid Entry (Alphanumeric, _, -)
+                </div>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td width="140">
+              <label for="txtExecutiveName" class="Captionstyle"
+                >Executive Name</label
+              >
+            </td>
+            <td>
+              <input
+                type="text"
+                id="txtExecutiveName"
+                class="Textboxstyle"
+                style="width: 320px"
+                formControlName="ExecutiveName"
+                maxlength="50"
+              />
+              <div
+                *ngIf="
+                  profile.get('ExecutiveName')?.invalid &&
+                  profile.get('ExecutiveName')?.touched
+                "
+                class="text-danger small"
+              >
+                <div *ngIf="profile.get('ExecutiveName')?.errors?.['required']">
+                  *
+                </div>
+                <div *ngIf="profile.get('ExecutiveName')?.errors?.['pattern']">
+                  Invalid Entry (&, #, ", ;, ' not allowed)
+                </div>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
     <ul class="nav nav-tabs" id="executiveTabs" role="tablist">
       <li class="nav-item" role="presentation">
         <button
@@ -41,21 +110,7 @@
           Stock
         </button>
       </li>
-      <li class="nav-item" role="presentation" style="display: none">
-        <!-- Assuming Hierarchy is hidden -->
-        <button
-          class="nav-link"
-          id="hierarchy-tab"
-          data-bs-toggle="tab"
-          data-bs-target="#Hierarchy"
-          type="button"
-          role="tab"
-          aria-controls="Hierarchy"
-          aria-selected="false"
-        >
-          Hierarchy
-        </button>
-      </li>
+
       <li
         class="nav-item"
         role="presentation"
@@ -119,77 +174,6 @@
             <tbody>
               <tr>
                 <td width="140">
-                  <label for="txtExecutiveCode" class="Captionstyle"
-                    >Executive Code</label
-                  >
-                </td>
-                <td>
-                  <input
-                    type="text"
-                    id="txtExecutiveCode"
-                    class="Textboxstyle"
-                    style="width: 120px"
-                    formControlName="ExecutiveCode"
-                    maxlength="10"
-                    [readonly]="isEditMode()"
-                  />
-                  <div
-                    *ngIf="
-                      profile.get('ExecutiveCode')?.invalid &&
-                      profile.get('ExecutiveCode')?.touched
-                    "
-                    class="text-danger small"
-                  >
-                    <div
-                      *ngIf="profile.get('ExecutiveCode')?.errors?.['required']"
-                    >
-                      *
-                    </div>
-                    <div
-                      *ngIf="profile.get('ExecutiveCode')?.errors?.['pattern']"
-                    >
-                      Invalid Entry (Alphanumeric, _, -)
-                    </div>
-                  </div>
-                </td>
-              </tr>
-              <tr>
-                <td width="140">
-                  <label for="txtExecutiveName" class="Captionstyle"
-                    >Executive Name</label
-                  >
-                </td>
-                <td>
-                  <input
-                    type="text"
-                    id="txtExecutiveName"
-                    class="Textboxstyle"
-                    style="width: 320px"
-                    formControlName="ExecutiveName"
-                    maxlength="50"
-                  />
-                  <div
-                    *ngIf="
-                      profile.get('ExecutiveName')?.invalid &&
-                      profile.get('ExecutiveName')?.touched
-                    "
-                    class="text-danger small"
-                  >
-                    <div
-                      *ngIf="profile.get('ExecutiveName')?.errors?.['required']"
-                    >
-                      *
-                    </div>
-                    <div
-                      *ngIf="profile.get('ExecutiveName')?.errors?.['pattern']"
-                    >
-                      Invalid Entry (&, #, ", ;, ' not allowed)
-                    </div>
-                  </div>
-                </td>
-              </tr>
-              <tr>
-                <td width="140">
                   <label class="Captionstyle">Executive Group</label>
                 </td>
                 <td>
@@ -204,6 +188,46 @@
                   </select>
                 </td>
               </tr>
+            </tbody>
+          </table>
+          <table class="table table-borderless">
+            <tbody>
+              <!-- Classification Selectors -->
+              <tr>
+                <xont-ventura-classification-selector
+                  #clsExecutive
+                  [id]="cls1.ID"
+                  [taskCode]="cls1.TaskCode"
+                  [classificationType]="cls1.Type"
+                  [labelWidth]="cls1.LabelWidth"
+                  [enableUserInput]="cls1.EnableUserInput"
+                  [codeTextWidth]="cls1.CodeTextWidth"
+                  [descriptionTextWidth]="cls1.DescriptionTextWidth"
+                  [activeStatus]="cls1.ActiveStatus"
+                  [allMandatory]="cls1.AllMandatory"
+                  [lastLevelRequired]="cls1.LastLevelRequired"
+                ></xont-ventura-classification-selector>
+              </tr>
+
+              <tr>
+                <xont-ventura-classification-selector
+                  #clsMarketingHierarchy
+                  [id]="cls2.ID"
+                  [taskCode]="cls2.TaskCode"
+                  [classificationType]="cls2.Type"
+                  [labelWidth]="cls2.LabelWidth"
+                  [enableUserInput]="cls2.EnableUserInput"
+                  [codeTextWidth]="cls2.CodeTextWidth"
+                  [descriptionTextWidth]="cls2.DescriptionTextWidth"
+                  [activeStatus]="cls2.ActiveStatus"
+                  [allMandatory]="cls2.AllMandatory"
+                  [lastLevelRequired]="cls2.LastLevelRequired"
+                ></xont-ventura-classification-selector>
+              </tr>
+            </tbody>
+          </table>
+          <table class="table table-borderless">
+            <tbody>
               <tr>
                 <td width="140">
                   <label for="lpmtOptType" class="Captionstyle"
@@ -218,7 +242,7 @@
                     [maxLengths]="[2, 50]"
                     [inputWidths]="[120, 320]"
                     [gridHeaders]="['Code', 'Description']"
-                    [gridFields]="['Code', 'Description']"
+                    [gridFields]="['code', 'description']"
                     [mandatory]="true"
                     [strict]="true"
                     (onDataBind)="lpmtOptType_DataBind()"
@@ -256,7 +280,7 @@
                     [maxLengths]="[2, 50]"
                     [inputWidths]="[120, 320]"
                     [gridHeaders]="['Code', 'Description']"
-                    [gridFields]="['Code', 'Description']"
+                    [gridFields]="['code', 'description']"
                     [mandatory]="false"
                     [strict]="true"
                     (onDataBind)="lpmtIncentiveGroup_DataBind()"
@@ -545,13 +569,13 @@
                     [maxLengths]="[10, 50]"
                     [inputWidths]="[120, 320]"
                     [gridHeaders]="['Code', 'Description']"
-                    [gridFields]="['Code', 'Description']"
+                    [gridFields]="['code', 'description']"
                     [mandatory]="false"
                     [strict]="true"
                     (onDataBind)="lpmtUserProfile_DataBind()"
-                    formControlName="UserProfile"
+                    [control]="profile"
                     [modelProps]="['UserProfile', 'UserProfileName']"
-                    [dataFields]="['Code', 'Description']"
+                    [dataFields]="['code', 'description']"
                   ></xont-ventura-list-prompt>
                 </td>
               </tr>
@@ -654,19 +678,16 @@
                     [maxLengths]="[4, 50]"
                     [inputWidths]="[120, 320]"
                     [gridHeaders]="['Code', 'Description']"
-                    [gridFields]="[
-                      'MasterGroupValue',
-                      'MasterGroupValueDescription'
-                    ]"
+                    [gridFields]="['masterGroupValue', 'merchandizing-tab']"
                     [mandatory]="false"
-                    type="Territory"
+                    type="territory"
                     status="Active"
                     [strict]="true"
-                    formControlName="StockTerritory"
+                    [control]="stock"
                     [modelProps]="['StockTerritory', 'StockTerritoryDesc']"
                     [dataFields]="[
-                      'MasterGroupValue',
-                      'MasterGroupValueDescription'
+                      'masterGroupValue',
+                      'masterGroupValueDescription'
                     ]"
                     (onChanged)="LoadReturnLocations()"
                   ></xont-ventura-list-prompt>
@@ -692,9 +713,9 @@
                       'Description'
                     ]"
                     [gridFields]="[
-                      'Warehouse Code',
-                      'Location Code',
-                      'Description'
+                      'warehouse Code',
+                      'location Code',
+                      'description'
                     ]"
                     [mandatory]="false"
                     [strict]="true"
@@ -705,10 +726,10 @@
                       'DefSalesLocationDes'
                     ]"
                     [dataFields]="[
-                      'Warehouse Code',
-                      'Location',
-                      'Code',
-                      'Description'
+                      'warehouseCode',
+                      'location',
+                      'code',
+                      'description'
                     ]"
                   ></xont-ventura-list-prompt>
                 </td>
@@ -733,9 +754,9 @@
                       'Description'
                     ]"
                     [gridFields]="[
-                      'Warehouse Code',
-                      'Location Code',
-                      'Description'
+                      'warehouse Code',
+                      'location code',
+                      'description'
                     ]"
                     [mandatory]="false"
                     [strict]="true"
@@ -746,10 +767,10 @@
                       'DefStockLocationDes'
                     ]"
                     [dataFields]="[
-                      'Warehouse Code',
-                      'Location',
-                      'Code',
-                      'Description'
+                      'warehouseCode',
+                      'location',
+                      'code',
+                      'description'
                     ]"
                   ></xont-ventura-list-prompt>
                 </td>
@@ -787,10 +808,10 @@
                       'DefReturnLocationDes'
                     ]"
                     [dataFields]="[
-                      'Warehouse Code',
-                      'Location',
-                      'Code',
-                      'Description'
+                      'warehouseCode',
+                      'location',
+                      'code',
+                      'description'
                     ]"
                   ></xont-ventura-list-prompt>
                 </td>
@@ -828,10 +849,10 @@
                       'DefInspectionLocationDes'
                     ]"
                     [dataFields]="[
-                      'Warehouse Code',
-                      'Location',
-                      'Code',
-                      'Description'
+                      'warehouseCode',
+                      'location',
+                      'code',
+                      'description'
                     ]"
                   ></xont-ventura-list-prompt>
                 </td>
@@ -869,10 +890,10 @@
                       'DefSpecialLocationDes'
                     ]"
                     [dataFields]="[
-                      'Warehouse Code',
-                      'Location',
-                      'Code',
-                      'Description'
+                      'warehouseCode',
+                      'location',
+                      'code',
+                      'description'
                     ]"
                   ></xont-ventura-list-prompt>
                 </td>
@@ -910,10 +931,10 @@
                       'DefUnloadingLocationDes'
                     ]"
                     [dataFields]="[
-                      'Warehouse Code',
-                      'Location',
-                      'Code',
-                      'Description'
+                      'warehouseCode',
+                      'location',
+                      'code',
+                      'description'
                     ]"
                   ></xont-ventura-list-prompt>
                 </td>
@@ -938,7 +959,7 @@
                     [strict]="true"
                     [control]="stock"
                     [modelProps]="['SalesCategoryCode', 'SalesCategoryCodeDes']"
-                    [dataFields]="['Code', 'Description']"
+                    [dataFields]="['code', 'description']"
                   ></xont-ventura-list-prompt>
                 </td>
               </tr>
@@ -965,7 +986,7 @@
                       'DefEmptyTransactionCategory',
                       'DefEmptyTransactionCategoryDesc'
                     ]"
-                    [dataFields]="['Code', 'Description']"
+                    [dataFields]="['code', 'description']"
                   ></xont-ventura-list-prompt>
                 </td>
               </tr>
@@ -988,16 +1009,6 @@
             (onChange)="clsGeo_SelectionChange()"
           ></xont-ventura-classification-selector>
         </div>
-      </div>
-
-      <!-- Hierarchy Tab (Hidden) -->
-      <div
-        class="tab-pane fade"
-        id="Hierarchy"
-        role="tabpanel"
-        aria-labelledby="hierarchy-tab"
-      >
-        <!-- Content if needed, currently hidden -->
       </div>
 
       <!-- Return Tab -->
@@ -1461,9 +1472,9 @@
                     [mandatory]="false"
                     [strict]="true"
                     (onDataBind)="lpmtParameterGroup_DataBind()"
-                    formControlName="Parameter"
+                    [control]="other"
                     [modelProps]="['Parameter', 'ParameterDescription']"
-                    [dataFields]="['Parameter', 'ParameterDescription']"
+                    [dataFields]="['parameter', 'parameterDescription']"
                   ></xont-ventura-list-prompt>
                 </td>
                 <td width="120"></td>
@@ -1523,6 +1534,7 @@
                     (onDataBind)="lpmtLoginUser_Databind()"
                     [control]="other"
                     [modelProps]="['AppUserName', 'UserFullName']"
+                    [dataFields]="['appUserName', 'userFullName']"
                   ></xont-ventura-list-prompt>
                 </td>
               </tr>
@@ -1578,9 +1590,9 @@
                     [gridFields]="['Code', 'Description']"
                     [mandatory]="false"
                     [strict]="true"
-                    formControlName="CostCenterCode"
+                    [control]="other"
                     [modelProps]="['CostCenterCode', 'CostCenterDesc']"
-                    [dataFields]="['Code', 'Description']"
+                    [dataFields]="['code', 'description']"
                   ></xont-ventura-list-prompt>
                 </td>
               </tr>
@@ -1672,39 +1684,6 @@
       </div>
     </div>
     <!-- End of Tab Content -->
-
-    <!-- Classification Selectors Outside Tabs -->
-    <div class="mt-3">
-      <xont-ventura-classification-selector
-        #clsExecutive
-        [id]="cls1.ID"
-        [taskCode]="cls1.TaskCode"
-        [classificationType]="cls1.Type"
-        [labelWidth]="cls1.LabelWidth"
-        [enableUserInput]="cls1.EnableUserInput"
-        [codeTextWidth]="cls1.CodeTextWidth"
-        [descriptionTextWidth]="cls1.DescriptionTextWidth"
-        [activeStatus]="cls1.ActiveStatus"
-        [allMandatory]="cls1.AllMandatory"
-        [lastLevelRequired]="cls1.LastLevelRequired"
-      ></xont-ventura-classification-selector>
-    </div>
-
-    <div class="mt-3">
-      <xont-ventura-classification-selector
-        #clsMarketingHierarchy
-        [id]="cls2.ID"
-        [taskCode]="cls2.TaskCode"
-        [classificationType]="cls2.Type"
-        [labelWidth]="cls2.LabelWidth"
-        [enableUserInput]="cls2.EnableUserInput"
-        [codeTextWidth]="cls2.CodeTextWidth"
-        [descriptionTextWidth]="cls2.DescriptionTextWidth"
-        [activeStatus]="cls2.ActiveStatus"
-        [allMandatory]="cls2.AllMandatory"
-        [lastLevelRequired]="cls2.LastLevelRequired"
-      ></xont-ventura-classification-selector>
-    </div>
 
     <!-- Hidden TimeStamp for Other -->
     <div style="display: none">
