@@ -5,57 +5,39 @@ import {
   ViewChild,
   inject,
   signal,
-  computed,
 } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
-import {
-  FormBuilder,
-  FormGroup,
-  FormControl,
-  Validators,
-} from '@angular/forms';
-import { Subscription, tap, catchError, of } from 'rxjs';
+import { FormBuilder, FormGroup } from '@angular/forms';
+import { catchError, finalize, of, tap } from 'rxjs';
+import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
 
 // Services
 import { CommonService } from '../common.service';
-import { ExecutiveService } from '../executive.service';
+import { AllExecutives, ExecutiveService } from '../executive.service';
 
-// Updated Components
-// Import your updated components
+// Custom Ventura components
 import { XontVenturaMessagePromptComponent } from '../xont-ventura-message-prompt/xont-ventura-message-prompt.component';
 import { XontVenturaCollapsibleComponent } from '../xont-ventura-collapsible/xont-ventura-collapsible.component';
 import { ListPromptComponent } from 'xont-ventura-list-prompt';
 import { XontVenturaClassificationSelectorComponent } from '../xont-ventura-classification-selector/xont-ventura-classification-selector.component';
-import { XontVenturaGridExportComponent } from '../xont-ventura-gridexport/xont-ventura-gridexport.component';
-import { XontVenturaGridLoaderComponent } from '../xont-ventura-gridloader/xont-ventura-gridloader.component';
 import { ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 
-// Types
-interface SelectionCriteria {
-  ExecutiveCode: string;
-  ExecutiveName: string;
-  TerritoryCode: string;
-  TerritoryDesc: string;
-  OperationType: string;
-  OperationTypeDesc: string;
-  Executive1: string;
-  Executive1Name: string;
-  Executive2: string;
-  Executive2Name: string;
-  Executive3: string;
-  Executive3Name: string;
-  Executive4: string;
-  Executive4Name: string;
-  Executive5: string;
-  Executive5Name: string;
-  SearchType: 'startWith' | 'anyWhere';
-  ActiveOnly: boolean;
-  FirstRow: number;
-  LastRow: number;
-  Collapsed: boolean;
-}
+// Angular Material
+import { MatTableDataSource } from '@angular/material/table';
+import { MatPaginator, PageEvent } from '@angular/material/paginator';
+import { MatSort, Sort } from '@angular/material/sort';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatRadioModule } from '@angular/material/radio';
+import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatButtonModule } from '@angular/material/button';
+import { MatTableModule } from '@angular/material/table';
+import { MatPaginatorModule } from '@angular/material/paginator';
+import { MatSortModule } from '@angular/material/sort';
+import { MatIconModule } from '@angular/material/icon';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 interface Executive {
   ExecutiveCode: string;
@@ -73,34 +55,76 @@ interface Executive {
   standalone: true,
   imports: [
     ReactiveFormsModule,
+    NgxSpinnerModule,
+    CommonModule,
     XontVenturaMessagePromptComponent,
     XontVenturaCollapsibleComponent,
     ListPromptComponent,
     XontVenturaClassificationSelectorComponent,
-    XontVenturaGridExportComponent,
-    XontVenturaGridLoaderComponent,
-    CommonModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatRadioModule,
+    MatCheckboxModule,
+    MatButtonModule,
+    MatTableModule,
+    MatPaginatorModule,
+    MatSortModule,
+    MatIconModule,
+    MatProgressSpinnerModule,
   ],
 })
 export class ListComponent implements OnInit, AfterViewInit {
-  // Dependency Injection
   private http = inject(HttpClient);
   private router = inject(Router);
   private fb = inject(FormBuilder);
   private commonService = inject(CommonService);
   private executiveService = inject(ExecutiveService);
+  private spinner = inject(NgxSpinnerService);
 
-  // Form Group
-  searchForm: FormGroup;
+  // Form
+  searchForm: FormGroup = this.fb.group({
+    ExecutiveCode: [''],
+    ExecutiveName: [''],
+    TerritoryCode: [''],
+    TerritoryDesc: [''],
+    OperationType: [''],
+    OperationTypeDesc: [''],
+    SearchType: ['startWith'],
+    ActiveOnly: [true],
+    Collapsed: [true],
+    FirstRow: [0],
+    LastRow: [0],
+  });
 
-  // View Children
+  // Ventura references
   @ViewChild('msgPrompt') msgPrompt!: XontVenturaMessagePromptComponent;
-  @ViewChild('gridLoader') gridLoader!: XontVenturaGridLoaderComponent;
   @ViewChild('clsExecutive')
   clsExecutive!: XontVenturaClassificationSelectorComponent;
   @ViewChild('lpmtOptType') lpmtOptType!: ListPromptComponent;
+  @ViewChild('lpmtTerritory') lpmtTerritory!: ListPromptComponent;
 
-  // Classification Selector Configuration
+  // Angular Material Table
+  displayedColumns: string[] = [
+    'Executive',
+    'ExecutiveName',
+    'UserProfileName',
+    'Territory',
+    'OperationType',
+    'Options',
+  ];
+  dataSource = new MatTableDataSource<Executive>([]);
+  @ViewChild(MatPaginator) paginator!: MatPaginator;
+  @ViewChild(MatSort) sort!: MatSort;
+
+  // State signals
+  executiveDataset = signal<Executive[]>([]);
+  totalRows = signal<number>(0);
+  isLoading = signal(false);
+
+  rowsOnPage = 10;
+  sortBy: string = 'ExecutiveCode';
+  sortOrder: 'asc' | 'desc' = 'asc';
+
   cls1 = {
     ID: 'clsExecutive',
     Type: '03',
@@ -115,332 +139,156 @@ export class ListComponent implements OnInit, AfterViewInit {
     Enabled: 'true',
   };
 
-  // Excel Export Configuration
-  export1 = 'executiveExport1';
-  gridID1 = 'tblExecutive';
-  gridName1 = 'Executive';
-
-  // Signals for reactive state
-  executiveDataset = signal<Executive[]>([]);
-  isLoading = signal(false);
-  isInitialLoad = signal(true);
-
-  // Computed properties
-  hasData = computed(() => this.executiveDataset().length > 0);
-  noDataFound = computed(() => !this.isLoading() && !this.hasData());
-
-  // Pagination
-  rowsOnPage = 10;
-  sortBy = 'ExecutiveCode';
-  sortOrder = 'asc';
-
-  busy?: Subscription;
-
-  constructor() {
-    // Initialize form with default values
-    this.searchForm = this.fb.group({
-      ExecutiveCode: [''],
-      ExecutiveName: [''],
-      TerritoryCode: [''],
-      TerritoryDesc: [''],
-      OperationType: [''],
-      OperationTypeDesc: [''],
-      SearchType: ['startWith'],
-      ActiveOnly: [true],
-    });
-  }
-
   ngOnInit(): void {
-    this.loadStoredCriteria();
+    this.restoreState();
   }
 
   ngAfterViewInit(): void {
-    // Load data after view initialization
-    setTimeout(() => {
-      if (this.isInitialLoad()) {
-        this.loadExecutives(true);
-      }
-    }, 0);
+    this.dataSource.paginator = this.paginator;
+    this.dataSource.sort = this.sort;
+    this.sort.sortChange.subscribe((sort: Sort) => this.onSortChange(sort));
+  }
+  private isInitialLoad = true;
+
+  ngAfterViewChecked(): void {
+    if (this.isInitialLoad && this.clsExecutive) {
+      this.list(true);
+      this.isInitialLoad = false;
+    }
   }
 
-  private loadStoredCriteria(): void {
+  private restoreState(): void {
     const storedCriteria = localStorage.getItem('SOMNT01_SelectionCriteria');
-    const storedExecutiveLevels = localStorage.getItem(
-      'SOMNT01_ExecutiveLevels'
-    );
-
     if (storedCriteria) {
       try {
-        const criteria = JSON.parse(storedCriteria);
-        this.searchForm.patchValue(criteria);
-      } catch (e) {
-        console.warn('Failed to parse stored selection criteria');
+        this.searchForm.patchValue(JSON.parse(storedCriteria));
+      } catch {
         localStorage.removeItem('SOMNT01_SelectionCriteria');
       }
     }
-
-    if (storedExecutiveLevels && this.clsExecutive) {
+    const storedLevels = localStorage.getItem('SOMNT01_ExecutiveLevels');
+    if (storedLevels) {
       try {
-        const clsExeArr: any[] = JSON.parse(storedExecutiveLevels);
-        if (clsExeArr && clsExeArr.length > 0) {
-          this.clsExecutive.setSelectedClassifications(clsExeArr);
+        const levels = JSON.parse(storedLevels);
+        if (levels?.length > 0) {
+          this.clsExecutive.setSelectedClassifications(levels);
         }
-      } catch (e) {
-        console.warn('Failed to parse stored executive levels');
+      } catch {
         localStorage.removeItem('SOMNT01_ExecutiveLevels');
       }
     }
   }
 
-  // Form control getters for easier template access
-  get ExecutiveCode(): FormControl {
-    return this.searchForm.get('ExecutiveCode') as FormControl;
+  ChangeSearchType(entry: 'startWith' | 'anyWhere') {
+    this.searchForm.patchValue({ SearchType: entry });
   }
 
-  get ExecutiveName(): FormControl {
-    return this.searchForm.get('ExecutiveName') as FormControl;
-  }
-
-  get TerritoryCode(): FormControl {
-    return this.searchForm.get('TerritoryCode') as FormControl;
-  }
-
-  get TerritoryDesc(): FormControl {
-    return this.searchForm.get('TerritoryDesc') as FormControl;
-  }
-
-  get OperationType(): FormControl {
-    return this.searchForm.get('OperationType') as FormControl;
-  }
-
-  get OperationTypeDesc(): FormControl {
-    return this.searchForm.get('OperationTypeDesc') as FormControl;
-  }
-
-  get SearchType(): FormControl {
-    return this.searchForm.get('SearchType') as FormControl;
-  }
-
-  get ActiveOnly(): FormControl {
-    return this.searchForm.get('ActiveOnly') as FormControl;
-  }
-
-  ChangeSearchType(entry: 'startWith' | 'anyWhere'): void {
-    this.SearchType.setValue(entry);
-  }
-
-  lpmtOptType_DataBind(): void {
+  lpmtOptType_DataBind() {
     this.lpmtOptType.dataSourceObservable =
       this.executiveService.getOptTypePrompt();
   }
 
-  loadExecutives(isInit: boolean): void {
-    if (!this.gridLoader) return;
-
+  list(isInit: boolean): void {
     this.isLoading.set(true);
-    this.isInitialLoad.set(false);
+    this.spinner.show();
+    const criteria = { ...this.searchForm.value };
+    criteria.SortBy = this.sortBy;
+    criteria.SortOrder = this.sortOrder;
 
-    // Save current state
-    this.saveCurrentState();
-
-    // Initialize grid loader
-    this.gridLoader.init('SOMNT01');
-    this.rowsOnPage = this.gridLoader.getPageSize();
-
-    // Set pagination
     if (isInit) {
-      this.gridLoader.setCurrentPage(1);
-      this.updatePagination(1, this.gridLoader.getLoadSize());
+      this.paginator?.firstPage();
+      criteria.FirstRow = 1;
+      criteria.LastRow = this.rowsOnPage;
     } else {
-      this.updatePagination(
-        this.gridLoader.getRowStart(),
-        this.gridLoader.getRowEnd()
-      );
+      const start = this.paginator.pageIndex * this.paginator.pageSize + 1;
+      const end = start + this.paginator.pageSize - 1;
+      criteria.FirstRow = start;
+      criteria.LastRow = end;
     }
 
-    // Prepare request data
-    const requestData = this.prepareRequestData();
+    localStorage.setItem('SOMNT01_SelectionCriteria', JSON.stringify(criteria));
+    const clsExeArr = this.clsExecutive
+      ? this.clsExecutive.getSelectedClassifications()
+      : [];
 
-    const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+    localStorage.setItem('SOMNT01_ExecutiveLevels', JSON.stringify(clsExeArr));
 
-    this.busy = this.http
-      .post<any>(
-        `${this.siteName()}/api/SOMNT01/GetAllExecutive`,
-        requestData,
-        { headers }
-      )
+    const selectedClassifications = clsExeArr.map((c: any) => ({
+      ParameterCode: c.groupCode,
+      ParameterValue: c.valueCode,
+    }));
+
+    this.executiveService
+      .getAllExecutive(criteria, selectedClassifications)
       .pipe(
-        tap((response) => {
-          this.executiveDataset.set(response[0] || []);
-          this.gridLoader.setRowCount(response[1] || 0);
+        tap((res: AllExecutives) => {
+          this.executiveDataset.set(res.executives || []);
+          this.dataSource.data = res.executives || [];
+          this.totalRows.set(res.totalCount || 0);
         }),
         catchError((err) => {
           this.showError(err);
           this.executiveDataset.set([]);
+          this.dataSource.data = [];
           return of([]);
+        }),
+        finalize(() => {
+          this.isLoading.set(false);
+
+          this.spinner.hide();
         })
       )
-      .subscribe(() => {
-        this.isLoading.set(false);
-      });
+      .subscribe();
   }
 
-  private saveCurrentState(): void {
-    localStorage.setItem(
-      'SOMNT01_SelectionCriteria',
-      JSON.stringify(this.searchForm.value)
-    );
-
-    const clsExeArr = this.clsExecutive.getSelectedClassifications();
-    localStorage.setItem('SOMNT01_ExecutiveLevels', JSON.stringify(clsExeArr));
+  onPageChange(event: PageEvent) {
+    this.rowsOnPage = event.pageSize;
+    this.list(false);
   }
 
-  private updatePagination(firstRow: number, lastRow: number): void {
-    // Update form with pagination values if needed
-    const currentValue = this.searchForm.value;
-    this.searchForm.patchValue({
-      ...currentValue,
-      FirstRow: firstRow,
-      LastRow: lastRow,
-    });
+  onSortChange(sort: Sort) {
+    this.sortBy = sort.active;
+    this.sortOrder = sort.direction || 'asc';
+    this.list(false);
   }
 
-  private prepareRequestData(): any {
-    const formValue = this.searchForm.value;
-    const clsExeArr = this.clsExecutive.getSelectedClassifications();
-
-    const selectedClassifications = clsExeArr.map((item) => ({
-      ParameterCode: item.GroupCode,
-      ParameterValue: item.ValueCode,
-    }));
-
-    // Update executive levels from classifications
-    this.updateExecutiveLevels(clsExeArr);
-
-    return {
-      SelectionCriteria: formValue,
-      SelectedClassifications: selectedClassifications,
-    };
+  newBasedOn_OnClick(item: Executive) {
+    this.saveAndNavigate('newBasedOn', item);
   }
 
-  private updateExecutiveLevels(clsExeArr: any[]): void {
-    const levels = [
-      'Executive1',
-      'Executive2',
-      'Executive3',
-      'Executive4',
-      'Executive5',
-    ];
-    const updates: any = {};
-
-    // Reset all levels first
-    levels.forEach((level) => {
-      updates[level] = '';
-      updates[`${level}Name`] = '';
-    });
-
-    // Set values from classifications
-    clsExeArr.forEach((item) => {
-      if (item.Index >= 0 && item.Index < levels.length && item.ValueCode) {
-        const levelKey = levels[item.Index];
-        updates[levelKey] = item.ValueCode;
-        updates[`${levelKey}Name`] = item.ValueDescription || '';
-      }
-    });
-
-    this.searchForm.patchValue(updates, { emitEvent: false });
+  edit_OnClick(item: Executive) {
+    this.saveAndNavigate('edit', item);
   }
 
-  // Navigation methods
-  newBasedOn_OnClick(item: Executive): void {
-    this.navigateToForm('newBasedOn', item.ExecutiveCode, item.ExecutiveName);
+  btnNew_OnClick() {
+    this.saveAndNavigate('new');
   }
 
-  edit_OnClick(item: Executive): void {
-    this.navigateToForm('edit', item.ExecutiveCode, item.ExecutiveName);
-  }
-
-  btnNew_OnClick(): void {
-    this.navigateToForm('new', '', '');
-  }
-
-  private navigateToForm(
-    mode: string,
-    executiveCode: string,
-    executiveName: string
-  ): void {
+  private saveAndNavigate(mode: string, item?: Executive) {
     localStorage.setItem(
       'SOMNT01_PageInit',
       JSON.stringify({
         Mode: mode,
-        ExecutiveCode: executiveCode.trim(),
-        ExecutiveName: executiveName.trim(),
+        ExecutiveCode: item?.ExecutiveCode?.trim() || '',
+        ExecutiveName: item?.ExecutiveName?.trim() || '',
       })
     );
     this.router.navigate(['new']);
   }
 
-  gridLoader_OnChange(): void {
-    this.loadExecutives(false);
-  }
-
-  onSearch(): void {
-    this.loadExecutives(true);
-  }
-
-  onReset(): void {
-    this.searchForm.reset({
-      SearchType: 'startWith',
-      ActiveOnly: true,
-    });
-    this.clsExecutive.cleanSelector();
-    this.executiveDataset.set([]);
-  }
-
-  siteName(): string {
+  siteName() {
     return this.commonService.getAPIPrefix();
   }
 
-  showError(err: any): void {
-    this.msgPrompt.show(err.error || err, 'SOMNT01');
+  showError(err: any) {
+    this.msgPrompt.show(err.error || err.message || err, 'SOMNT01');
   }
 
-  // Sorting functionality
-  onSort(column: string): void {
-    if (this.sortBy === column) {
-      this.sortOrder = this.sortOrder === 'asc' ? 'desc' : 'asc';
-    } else {
-      this.sortBy = column;
-      this.sortOrder = 'asc';
-    }
-    this.sortData();
-  }
-
-  private sortData(): void {
-    const data = [...this.executiveDataset()];
-    data.sort((a, b) => {
-      const valueA = a[this.sortBy as keyof Executive];
-      const valueB = b[this.sortBy as keyof Executive];
-
-      if (typeof valueA === 'string' && typeof valueB === 'string') {
-        return this.sortOrder === 'asc'
-          ? valueA.localeCompare(valueB)
-          : valueB.localeCompare(valueA);
-      }
-
-      return this.sortOrder === 'asc'
-        ? (valueA as number) - (valueB as number)
-        : (valueB as number) - (valueA as number);
-    });
-
-    this.executiveDataset.set(data);
-  }
-
-  // TrackBy function for better performance
-  trackByExecutiveCode(index: number, item: Executive): string {
+  trackByExecutiveCode(index: number, item: Executive) {
     return item.ExecutiveCode;
   }
-  closeTab(): void {
-    window.parent.postMessage({ action: 'closeTab' }, 'http://localhost:4752');
+
+  closeTab() {
+    window.parent.postMessage({ action: 'closeTab' }, '*');
   }
 }

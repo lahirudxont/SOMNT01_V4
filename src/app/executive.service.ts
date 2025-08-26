@@ -1,9 +1,13 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { CommonService } from './common.service';
-import { Observable, Subject, throwError } from 'rxjs';
+import { Observable, of, Subject, throwError } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 
+export interface AllExecutives {
+  executives: any[];
+  totalCount: number;
+}
 @Injectable({
   providedIn: 'root',
 })
@@ -13,14 +17,21 @@ export class ExecutiveService {
   private componentMethodCallSource = new Subject<any>();
   componentMethodCalled$ = this.componentMethodCallSource.asObservable();
 
-  public getAllExecutive(data: any): Observable<any> {
-    const headers = new HttpHeaders({
-      'Content-Type': 'application/json',
-    });
-
+  getAllExecutive(
+    criteria: any,
+    selectedClassifications: any
+  ): Observable<AllExecutives> {
     return this.http
-      .post(this.siteName() + '/api/SOMNT01/GetAllExecutive', data, { headers })
-      .pipe(catchError((error) => this.handleError(error)));
+      .post<AllExecutives>(this.siteName() + '/api/SOMNT01/GetAllExecutive', {
+        SelectionCriteria: criteria,
+        SelectedClassifications: selectedClassifications,
+      })
+      .pipe(
+        catchError((error) => {
+          this.handleError(error);
+          return of({ executives: [], totalCount: 0 });
+        })
+      );
   }
 
   public getOptTypePrompt(): Observable<any> {

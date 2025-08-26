@@ -70,9 +70,9 @@ import {
       <form [formGroup]="classificationForm">
         <table class="clsTable">
           <tr *ngFor="let row of selector; let i = index">
-            <td>
+            <td class="col-sm-2">
               <div [style.width]="labelWidth" class="Captionstyle">
-                {{ row.GroupDescription }}
+                {{ row.groupDescription }}
               </div>
             </td>
             <td>
@@ -94,7 +94,7 @@ import {
               <span>
                 <span
                   type="button"
-                  title="Master Group - {{ row.MasterGroup }}"
+                  title="Master Group - {{ row.masterGroup }}"
                   (click)="ClickedOn($event, i)"
                   *ngIf="enabled === 'true'"
                   class="fa fa-angle-double-down clickButton"
@@ -103,7 +103,7 @@ import {
                 </span>
                 <span
                   type="button"
-                  title="Master Group - {{ row.MasterGroup }}"
+                  title="Master Group - {{ row.masterGroup }}"
                   class="fa fa-angle-double-down clickButtonDisabled"
                   *ngIf="enabled === 'false'"
                   aria-hidden="true"
@@ -129,11 +129,11 @@ import {
             <td style="padding-left:2px;">
               <span style="position:relative;display:inline-block;">
                 <span
-                  *ngIf="row.ErrorMessage"
+                  *ngIf="row.errorMessage"
                   [class.clsMandatoryCurrent]="i === _currentClsGroupIndex"
                   class="clsErrormessagetextstyle"
                 >
-                  {{ row.ErrorMessage }}
+                  {{ row.errorMessage }}
                 </span>
               </span>
               <i
@@ -362,11 +362,11 @@ export class XontVenturaClassificationSelectorComponent
               index: i,
               txtCode: '',
               txtDesc: '',
-              GroupDescription: this.list[i].GroupDescription.trim(),
-              HierarchyRequired: this.list[i].HierarchyRequired.trim(),
-              MasterGroup: this.list[i].MasterGroup.trim(),
-              ErrorMessage: undefined,
-              LatestText: '',
+              groupDescription: this.list[i].groupDescription.trim(),
+              hierarchyRequired: this.list[i].hierarchyRequired.trim(),
+              masterGroup: this.list[i].masterGroup.trim(),
+              errorMessage: undefined,
+              latestText: '',
             };
             this.selector.push(obj);
 
@@ -535,9 +535,9 @@ export class XontVenturaClassificationSelectorComponent
 
     if (masterControlData) {
       this._pageSize =
-        masterControlData.AllowPaging === '1'
-          ? masterControlData.PageSize
-          : masterControlData.ExtendedPageSize;
+        masterControlData.allowPaging === '1'
+          ? masterControlData.pageSize
+          : masterControlData.extendedPageSize;
     }
 
     this._stillDataLoading = true;
@@ -581,10 +581,10 @@ export class XontVenturaClassificationSelectorComponent
     let FilterValue = '';
 
     if (this._cursorInCorD === 'C') {
-      FilterColumn = 'MasterGroupValue';
+      FilterColumn = 'masterGroupValue';
       FilterValue = currentFilteration.txtCode.toString().toUpperCase();
     } else {
-      FilterColumn = 'MasterGroupValueDescription';
+      FilterColumn = 'masterGroupValueDescription';
       FilterValue = currentFilteration.txtDesc.toString().toUpperCase();
     }
 
@@ -621,28 +621,28 @@ export class XontVenturaClassificationSelectorComponent
     if (item) {
       if (
         this.selector[this._currentClsGroupIndex].txtCode.trim() !==
-        item['MasterGroupValue'].trim()
+        item['masterGroupValue'].trim()
       ) {
         this.clearChildValues();
       }
 
       this.selector[this._currentClsGroupIndex].txtCode =
-        item['MasterGroupValue'].trim();
+        item['masterGroupValue'].trim();
       this.selector[this._currentClsGroupIndex].txtDesc =
-        item['MasterGroupValueDescription'].trim();
-      this.selector[this._currentClsGroupIndex].LatestText =
-        item['MasterGroupValue'].trim();
-      this.selector[this._currentClsGroupIndex].ErrorMessage = undefined;
+        item['masterGroupValueDescription'].trim();
+      this.selector[this._currentClsGroupIndex].latestText =
+        item['masterGroupValue'].trim();
+      this.selector[this._currentClsGroupIndex].errorMessage = undefined;
 
       // Update form values
       this.classificationForm
         .get(`code_${this._currentClsGroupIndex}`)
-        ?.setValue(item['MasterGroupValue'].trim());
+        ?.setValue(item['masterGroupValue'].trim());
       this.classificationForm
         .get(`desc_${this._currentClsGroupIndex}`)
-        ?.setValue(item['MasterGroupValueDescription'].trim());
+        ?.setValue(item['masterGroupValueDescription'].trim());
 
-      if (this.selector[this._currentClsGroupIndex].HierarchyRequired === '1') {
+      if (this.selector[this._currentClsGroupIndex].hierarchyRequired === '1') {
         this.autoFillHirarchy('withActiveStatus');
       }
     } else {
@@ -742,13 +742,13 @@ export class XontVenturaClassificationSelectorComponent
   public clearChildValues(): void {
     if (
       this.promptIndex < this.selector.length - 1 &&
-      this.selector[this.promptIndex + 1].HierarchyRequired === '1'
+      this.selector[this.promptIndex + 1].hierarchyRequired === '1'
     ) {
       for (let i = this.promptIndex + 1; i < this.selector.length; i++) {
-        if (this.selector[i].HierarchyRequired === '1') {
+        if (this.selector[i].hierarchyRequired === '1') {
           this.selector[i].txtCode = '';
           this.selector[i].txtDesc = '';
-          this.selector[i].LatestText = '';
+          this.selector[i].latestText = '';
 
           // Update form values
           this.classificationForm.get(`code_${i}`)?.setValue('');
@@ -761,8 +761,8 @@ export class XontVenturaClassificationSelectorComponent
   public autoFillHirarchy(type: string): void {
     let apiUrl =
       this.siteName() +
-      '/api/Prompt/GetMasterGroupValuesHirarchy?MasterGroup=' +
-      this.selector[this.promptIndex].MasterGroup +
+      '/api/Prompt/GetMasterGroupValuesHirarchy?masterGroup=' +
+      this.selector[this.promptIndex].masterGroup +
       '&Code=' +
       this.selector[this.promptIndex].txtCode.trim();
 
@@ -777,26 +777,26 @@ export class XontVenturaClassificationSelectorComponent
         for (let i = 0; i < this.selector.length; i++) {
           const obj1 = this.getMasterGroupObj(
             groupValuesHirarchy,
-            this.selector[i].MasterGroup.toString()
+            this.selector[i].masterGroup.toString()
           );
           if (obj1 != null) {
-            this.selector[i].txtCode = obj1['MasterGroupValue'].trim();
+            this.selector[i].txtCode = obj1['masterGroupValue'].trim();
             this.selector[i].txtDesc =
-              obj1['MasterGroupValueDescription'].trim();
-            this.selector[i].ErrorMessage = undefined;
-            this.selector[i].LatestText = obj1['MasterGroupValue'].trim();
+              obj1['masterGroupValueDescription'].trim();
+            this.selector[i].errorMessage = undefined;
+            this.selector[i].latestText = obj1['masterGroupValue'].trim();
 
             // Update form values
             this.classificationForm
               .get(`code_${i}`)
-              ?.setValue(obj1['MasterGroupValue'].trim());
+              ?.setValue(obj1['masterGroupValue'].trim());
             this.classificationForm
               .get(`desc_${i}`)
-              ?.setValue(obj1['MasterGroupValueDescription'].trim());
+              ?.setValue(obj1['masterGroupValueDescription'].trim());
           } else {
             this.selector[i].txtCode = '';
             this.selector[i].txtDesc = '';
-            this.selector[i].LatestText = '';
+            this.selector[i].latestText = '';
 
             // Update form values
             this.classificationForm.get(`code_${i}`)?.setValue('');
@@ -814,25 +814,25 @@ export class XontVenturaClassificationSelectorComponent
   public getMasterGroupObj(array: any[], masterGroup: string): any {
     return this.findArray(
       array,
-      (item: any) => item.MasterGroup.trim() === masterGroup.trim()
+      (item: any) => item.masterGroup.trim() === masterGroup.trim()
     );
   }
 
   public onValueChange(index: number): void {
     if (this.allMandatory === 'true') {
       if (this.selector[index].txtCode === '') {
-        this.selector[index].ErrorMessage = '*';
+        this.selector[index].errorMessage = '*';
       } else {
-        this.selector[index].ErrorMessage = undefined;
+        this.selector[index].errorMessage = undefined;
       }
     }
 
     if (this.lastLevelRequired === 'true') {
       if (index === this.selector.length - 1) {
         if (this.selector[index].txtCode === '') {
-          this.selector[index].ErrorMessage = '*';
+          this.selector[index].errorMessage = '*';
         } else {
-          this.selector[index].ErrorMessage = undefined;
+          this.selector[index].errorMessage = undefined;
         }
       }
     }
@@ -843,13 +843,13 @@ export class XontVenturaClassificationSelectorComponent
     for (let i = 0; i < this.selector.length; i++) {
       if (this.allMandatory === 'true') {
         if (this.selector[i].txtCode.trim() === '') {
-          this.selector[i].ErrorMessage = '*';
+          this.selector[i].errorMessage = '*';
         } else {
-          this.selector[i].ErrorMessage = undefined;
+          this.selector[i].errorMessage = undefined;
         }
       } else {
         if (this.selector[i].txtCode.trim() === '') {
-          this.selector[i].ErrorMessage = undefined;
+          this.selector[i].errorMessage = undefined;
         }
       }
     }
@@ -857,14 +857,14 @@ export class XontVenturaClassificationSelectorComponent
     if (this.lastLevelRequired === 'true') {
       const last = this.selector.length - 1;
       if (this.selector[last].txtCode === '') {
-        this.selector[last].ErrorMessage = '*';
+        this.selector[last].errorMessage = '*';
       } else {
-        this.selector[last].ErrorMessage = undefined;
+        this.selector[last].errorMessage = undefined;
       }
     }
 
     for (let j = 0; j < this.selector.length; j++) {
-      if (this.selector[j].ErrorMessage !== undefined) {
+      if (this.selector[j].errorMessage !== undefined) {
         this._valid = false;
         return;
       }
@@ -880,13 +880,13 @@ export class XontVenturaClassificationSelectorComponent
       if (this.selector[i].txtCode.trim() !== '') {
         result.push({
           Index: i,
-          GroupCode: this.list[i].MasterGroup.trim(),
-          GroupDescription: this.list[i].GroupDescription.trim(),
-          GroupType: this.list[i].GroupType.trim(),
-          GroupTypeDescription: this.list[i].GroupType.trim(),
-          HasHirarchy: this.list[i].HierarchyRequired.trim(),
-          ValueCode: this.selector[i].txtCode.trim(),
-          ValueDescription: this.selector[i].txtDesc.trim(),
+          groupCode: this.list[i].masterGroup.trim(),
+          groupDescription: this.list[i].groupDescription.trim(),
+          groupType: this.list[i].groupType.trim(),
+          groupTypeDescription: this.list[i].groupType.trim(),
+          hasHirarchy: this.list[i].hierarchyRequired.trim(),
+          valueCode: this.selector[i].txtCode.trim(),
+          valueDescription: this.selector[i].txtDesc.trim(),
         });
       }
     }
@@ -912,18 +912,18 @@ export class XontVenturaClassificationSelectorComponent
 
     for (let i = 0; i < array.length; i++) {
       for (let j = 0; j < this.selector.length; j++) {
-        if (this.selector[j].MasterGroup.trim() === array[i].GroupCode.trim()) {
-          this.selector[j].txtCode = array[i].ValueCode.trim();
-          this.selector[j].txtDesc = array[i].ValueDescription.trim();
-          this.selector[j].LatestText = '';
+        if (this.selector[j].masterGroup.trim() === array[i].groupCode.trim()) {
+          this.selector[j].txtCode = array[i].valueCode.trim();
+          this.selector[j].txtDesc = array[i].valueDescription.trim();
+          this.selector[j].latestText = '';
 
           // Update form values
           this.classificationForm
             .get(`code_${j}`)
-            ?.setValue(array[i].ValueCode.trim());
+            ?.setValue(array[i].valueCode.trim());
           this.classificationForm
             .get(`desc_${j}`)
-            ?.setValue(array[i].ValueDescription.trim());
+            ?.setValue(array[i].valueDescription.trim());
         }
       }
     }
@@ -934,8 +934,8 @@ export class XontVenturaClassificationSelectorComponent
     for (let i = 0; i < this.selector.length; i++) {
       this.selector[i].txtCode = '';
       this.selector[i].txtDesc = '';
-      this.selector[i].ErrorMessage = undefined;
-      this.selector[i].LatestText = '';
+      this.selector[i].errorMessage = undefined;
+      this.selector[i].latestText = '';
 
       // Update form values
       this.classificationForm.get(`code_${i}`)?.setValue('');

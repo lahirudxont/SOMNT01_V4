@@ -1,14 +1,10 @@
-<!-- new.component.html -->
 <div class="container-fluid">
-  <!-- Message Prompt Component -->
   <xont-ventura-message-prompt #msgPrompt></xont-ventura-message-prompt>
 
-  <!-- Loading Spinner -->
   <div *ngIf="isLoading()" class="d-flex justify-content-center my-3">
     <mat-spinner diameter="40"></mat-spinner>
   </div>
 
-  <!-- Main Form -->
   <form
     *ngIf="!isLoading()"
     [formGroup]="executiveForm"
@@ -226,9 +222,9 @@
                     [mandatory]="true"
                     [strict]="true"
                     (onDataBind)="lpmtOptType_DataBind()"
-                    formControlName="OperationType"
+                    [control]="profile"
                     [modelProps]="['OperationType', 'OperationTypeDesc']"
-                    [dataFields]="['Code', 'Description']"
+                    [dataFields]="['code', 'description']"
                     (onChanged)="lpmtOptType_Changed($event)"
                   ></xont-ventura-list-prompt>
                   <div
@@ -264,9 +260,9 @@
                     [mandatory]="false"
                     [strict]="true"
                     (onDataBind)="lpmtIncentiveGroup_DataBind()"
-                    formControlName="IncentiveGroup"
+                    [control]="profile"
                     [modelProps]="['IncentiveGroup', 'IncentiveGroupDesc']"
-                    [dataFields]="['Code', 'Description']"
+                    [dataFields]="['code', 'description']"
                   ></xont-ventura-list-prompt>
                 </td>
               </tr>
@@ -1733,7 +1729,7 @@
         class="btn btn-secondary MainButtonStyle ms-2"
         (click)="btnCancel_Click()"
       >
-        Exit
+        Cancel
       </button>
     </div>
   </form>
