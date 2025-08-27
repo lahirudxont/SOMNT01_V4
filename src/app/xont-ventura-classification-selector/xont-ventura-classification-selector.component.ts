@@ -91,14 +91,14 @@ import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
                   title="Master Group - {{ row.masterGroup }}"
                   (click)="ClickedOn($event, i)"
                   *ngIf="enabled === 'true'"
-                  class="fa fa-angle-double-down clickButton me-2"
+                  class="fa fa-angle-double-down clickButton m-2"
                   aria-hidden="true"
                 >
                 </span>
                 <span
                   type="button"
                   title="Master Group - {{ row.masterGroup }}"
-                  class="fa fa-angle-double-down clickButtonDisabled me-2"
+                  class="fa fa-angle-double-down clickButtonDisabled m-2"
                   *ngIf="enabled === 'false'"
                   aria-hidden="true"
                 >
