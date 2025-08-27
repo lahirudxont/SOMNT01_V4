@@ -133,6 +133,7 @@ interface ExecutiveData {
   dsnName: string;
   encryptedPassword: null;
   hierarchyType: string;
+
   hhuCode: string;
   intermedeatePath: string;
   path: string;
@@ -151,7 +152,6 @@ function passwordMatchValidator(
 ): ValidationErrors | null {
   const password = control.get('Password');
   const confirmPassword = control.get('ConfirmPassword');
-
   if (password && confirmPassword && password.value !== confirmPassword.value) {
     confirmPassword.setErrors({ mismatch: true });
     return { mismatch: true };
@@ -166,7 +166,6 @@ function passwordMatchValidator(
 function imeiValidator(control: AbstractControl): ValidationErrors | null {
   const chkValIMEI = control.get('chkValIMEI')?.value;
   const imei = control.get('IMEINo')?.value;
-
   if (chkValIMEI && (!imei || imei.trim() === '')) {
     const imeiControl = control.get('IMEINo');
     if (imeiControl) {
@@ -225,51 +224,58 @@ export class NewComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('lpmtLoginUser') lpmtLoginUser!: ListPromptComponent;
   @ViewChild('lpmtUnloadingLocation')
   lpmtUnloadingLocation!: ListPromptComponent;
-
   @ViewChild('lpmtSalesLocation') lpmtSalesLocation!: ListPromptComponent;
+  @ViewChild('lpmtDefEmptyCategory') lpmtDefEmptyCategory!: ListPromptComponent;
+  @ViewChild('lpmtStockLocation') lpmtStockLocation!: ListPromptComponent;
+  @ViewChild('lpmtSpecialLocation') lpmtSpecialLocation!: ListPromptComponent;
+  @ViewChild('lpmtInspectionLocation')
+  lpmtInspectionLocation!: ListPromptComponent;
+  @ViewChild('lpmtDefSaleCategory')
+  lpmtDefSaleCategory!: ListPromptComponent;
+  @ViewChild('lpmtDamageLocation')
+  lpmtDamageLocation!: ListPromptComponent;
+
   // Classification configurations
   readonly cls1 = {
     ID: 'clsExecutive',
     Type: '03',
     TaskCode: 'SOMNT01',
-    LabelWidth: '140px', //optional default:100px
-    EnableUserInput: 'false', //optional default:true
-    CodeTextWidth: '120px', //optional default:100px
-    DescriptionTextWidth: '320px', //optional default:200px
-    ActiveStatus: 'Active', //optional default:Active
-    AllMandatory: 'true', //optional default:false
-    LastLevelRequired: 'false', //optional default:false
-    Enabled: 'true', ////optional default:true
+    LabelWidth: '140px',
+    EnableUserInput: 'false',
+    CodeTextWidth: '120px',
+    DescriptionTextWidth: '320px',
+    ActiveStatus: 'Active',
+    AllMandatory: 'true',
+    LastLevelRequired: 'false',
+    Enabled: 'true',
   };
 
   readonly cls2 = {
     ID: 'clsMarketingHierarchy',
     Type: '29',
     TaskCode: 'SOMNT01',
-    LabelWidth: '140px', //optional default:100px
-    EnableUserInput: 'false', //optional default:true
-    CodeTextWidth: '120px', //optional default:100px
-    DescriptionTextWidth: '320px', //optional default:200px
-    ActiveStatus: 'Active', //optional default:Active
-    AllMandatory: 'false', //optional default:false
-    LastLevelRequired: 'false', //optional default:false
-    Enabled: 'true', ////optional default:true
+    LabelWidth: '140px',
+    EnableUserInput: 'false',
+    CodeTextWidth: '120px',
+    DescriptionTextWidth: '320px',
+    ActiveStatus: 'Active',
+    AllMandatory: 'false',
+    LastLevelRequired: 'false',
+    Enabled: 'true',
   };
 
   readonly cls3 = {
     ID: 'clsGeo',
     Type: '00',
     TaskCode: 'SOMNT01',
-    LabelWidth: '140px', //optional default:100px
-    EnableUserInput: 'false', //optional default:true
-    CodeTextWidth: '120px', //optional default:100px
-    DescriptionTextWidth: '320px', //optional default:200px
-    ActiveStatus: 'Active', //optional default:Active
-    //AllMandatory: this.pnlStockTerritory.Visible==true?'true':'false',//optional default:false
-    AllMandatory: 'true', //optional default:false
-    LastLevelRequired: 'false', //optional default:false
-    Enabled: 'true', ////optional default:true
-    //,onchange: ''
+    LabelWidth: '140px',
+    EnableUserInput: 'false',
+    CodeTextWidth: '120px',
+    DescriptionTextWidth: '320px',
+    ActiveStatus: 'Active',
+    AllMandatory: 'true',
+    LastLevelRequired: 'false',
+    Enabled: 'true',
   };
 
   // Signals
@@ -284,11 +290,11 @@ export class NewComponent implements OnInit, AfterViewInit, OnDestroy {
   private pageInit: any = undefined;
   private executiveData: ExecutiveData | undefined = undefined;
   private subscriptions = new Set<Subscription>();
-
-  public pnlReturn = { Visible: true };
+  public pnlReturn = { Visible: false };
   public pnlUserProfile = { Visible: true };
   public pnlStockDetails = { Visible: true };
   public pnlStockTerritory = { Visible: true };
+
   constructor() {
     this.initializeForm();
   }
@@ -424,17 +430,13 @@ export class NewComponent implements OnInit, AfterViewInit, OnDestroy {
         chkAllowPriceChange: [false],
         chkCashCustomerOnly: [false],
         chkGISExecutive: [false],
+        chkOnlineExecutive: [false],
         ParentExecutiveCode: [''],
         ParentExecutiveName: [''],
         ParentExecutiveType: [''],
         ExecutiveType: [''],
-        ExecutiveTypeHierarchyLevel: [0],
-        HierarchyTimeStamp: [''],
-        CommissionPercentagevalid: [true],
         MappingExecutiveCode: [''],
         ApplicationType: [''],
-        ExecutiveclsType: [''],
-        chkOnlineExecutive: [false],
         AppUserName: [''],
         UserFullName: [''],
         Parameter: [''],
@@ -490,9 +492,7 @@ export class NewComponent implements OnInit, AfterViewInit, OnDestroy {
     this.GetHierarchyType();
   }
 
-  private loadStoredData(): void {
-    // Load any additional stored data if needed
-  }
+  private loadStoredData(): void {}
 
   private loadExecutiveGroups(): void {
     const sub = this.executiveService.getExecutiveGroups().subscribe({
@@ -649,7 +649,6 @@ export class NewComponent implements OnInit, AfterViewInit, OnDestroy {
       ParentExecutiveName: this.executiveData.parentExecutiveName?.trim() || '',
       ParentExecutiveType: this.executiveData.parentExecutiveType?.trim() || '',
       ExecutiveType: this.executiveData.executiveType?.trim() || '',
-      CommissionPercentagevalid: true,
       MappingExecutiveCode:
         this.executiveData.mappingExecutiveCode?.trim() || '',
       ApplicationType: this.executiveData.applicationType?.trim() || '',
@@ -729,7 +728,6 @@ export class NewComponent implements OnInit, AfterViewInit, OnDestroy {
   clsGeo_SelectionChange(): void {
     const selectedcls = this.clsGeo?.getSelectedClassifications() || [];
     let foundTerritory = false;
-
     for (const item of selectedcls) {
       if (item.groupCode?.trim() === 'TETY' && item.valueCode?.trim() !== '') {
         this.stock.patchValue({
@@ -748,13 +746,12 @@ export class NewComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   LoadReturnLocations(): void {
-    const stockTerritory = this.stock.get('StockTerritory')?.value || '';
+    const stockTerritory = this.stock.get('StockTerritory')?.value ?? '';
     let returnLocationObservable: Observable<any>;
-
-    if (stockTerritory && this.pageInit?.executiveCode) {
+    if (this.pageInit?.executiveCode) {
       returnLocationObservable = this.executiveService.getReturnLocations(
-        stockTerritory,
-        this.pageInit.executiveCode.trim()
+        this.pageInit.executiveCode.trim(),
+        stockTerritory
       );
     } else {
       returnLocationObservable = of([]);
@@ -861,7 +858,6 @@ export class NewComponent implements OnInit, AfterViewInit, OnDestroy {
   validateCommissionPercentage(): void {
     const commissionControl = this.CommissionPercentage;
     const commissionValue = commissionControl.value;
-
     let isValid = true;
     if (
       commissionValue !== null &&
@@ -874,7 +870,6 @@ export class NewComponent implements OnInit, AfterViewInit, OnDestroy {
       isValid = false;
     }
     this.other.patchValue({ CommissionPercentagevalid: isValid });
-
     if (!isValid && commissionValue !== null && commissionValue !== '') {
       commissionControl.setErrors({ invalidCommission: true });
     } else {
@@ -893,7 +888,6 @@ export class NewComponent implements OnInit, AfterViewInit, OnDestroy {
   chkAutoTMRouteCode_CheckedChanged(): void {
     const isChecked = this.merchandizing.get('chkAutoTMRouteCode')?.value;
     const prefixControl = this.merchandizing.get('TMRouteCodePrefix');
-
     if (isChecked) {
       prefixControl?.enable();
       if (this.isEditMode() && this.pageInit?.executiveCode) {
@@ -966,7 +960,6 @@ export class NewComponent implements OnInit, AfterViewInit, OnDestroy {
       this.clsExecutive?.getSelectedClassifications() || [];
     const geoClassifications: SelectedClassification[] =
       this.clsGeo?.getSelectedClassifications() || [];
-
     const profileValue = this.profile.value;
     const stockValue = this.stock.value;
     const otherValue = this.other.value;
@@ -1071,13 +1064,8 @@ export class NewComponent implements OnInit, AfterViewInit, OnDestroy {
         ParentExecutiveName: otherValue.ParentExecutiveName,
         ParentExecutiveType: otherValue.ParentExecutiveType,
         ExecutiveType: otherValue.ExecutiveType,
-        ExecutiveTypeHierarchyLevel:
-          otherValue.ExecutiveTypeHierarchyLevel || 0,
-        HierarchyTimeStamp: otherValue.HierarchyTimeStamp || '',
         MappingExecutiveCode: otherValue.MappingExecutiveCode,
         ApplicationType: otherValue.ApplicationType,
-        ExecutiveclsType: otherValue.ExecutiveclsType,
-        chkOnlineExecutive: otherValue.chkOnlineExecutive,
         AppUserName: otherValue.AppUserName,
         UserFullName: otherValue.UserFullName,
         Parameter: otherValue.Parameter,
@@ -1104,7 +1092,6 @@ export class NewComponent implements OnInit, AfterViewInit, OnDestroy {
         LocationCode: loc.LocationCode,
       })),
     };
-
     return request;
   }
 
@@ -1112,7 +1099,6 @@ export class NewComponent implements OnInit, AfterViewInit, OnDestroy {
     classifications: SelectedClassification[]
   ): any[] {
     return classifications.map((cls) => ({
-      ExecutiveCode: this.profile.get('ExecutiveCode')?.value || '',
       MasterGroup: cls.groupCode || '',
       MasterGroupDescription: cls.groupDescription || '',
       MasterGroupValue: cls.valueCode || '',
@@ -1168,14 +1154,12 @@ export class NewComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
-  // Event Handlers
   lpmtOptType_Changed(event: any): void {
     const operationType = this.profile.get('OperationType')?.value;
     const validTypes = ['OR', 'SL', 'BT'];
     const isVisible = operationType && validTypes.includes(operationType);
     this.profile.patchValue({ IsValidateOperationType: !!isVisible });
     if (!isVisible) {
-      //V3008
       this.pnlReturn.Visible = false;
       this.pnlStockDetails.Visible = false;
       this.pnlStockTerritory.Visible = false;
@@ -1183,6 +1167,9 @@ export class NewComponent implements OnInit, AfterViewInit, OnDestroy {
       this.pnlReturn.Visible = true;
       this.pnlStockDetails.Visible = true;
       this.pnlStockTerritory.Visible = true;
+    }
+    if (this.pnlReturn.Visible) {
+      this.LoadReturnLocations();
     }
   }
 
@@ -1227,13 +1214,13 @@ export class NewComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
-  lpmtUnloadingLocation_DataBind(): void {
-    const stockTerritory = this.stock.get('StockTerritory')?.value || '';
-    if (this.lpmtUnloadingLocation) {
-      this.lpmtUnloadingLocation.dataSourceObservable =
-        this.executiveService.getUnloadingLocation(stockTerritory.trim());
+  lpmtCostCenter_DataBind(): void {
+    if (this.lpmtCostCenter) {
+      // this.lpmtCostCenter.dataSourceObservable =
+      //   this.executiveService.getCostCenterPrompt();
     }
   }
+
   lpmtSalesLocation_DataBind(): void {
     const stockTerritory = this.stock.get('StockTerritory')?.value || '';
     if (this.lpmtSalesLocation) {
@@ -1241,61 +1228,123 @@ export class NewComponent implements OnInit, AfterViewInit, OnDestroy {
         this.executiveService.getSalesLocation(stockTerritory.trim());
     }
   }
-  lpmtDefSaleCategory_DataBind(): void {
-    let selectedcls: any[] = this.clsGeo.getSelectedClassifications();
-    let isUserMsg = false;
-    let TerritoryCode = '';
-    const OperationType = this.profile.get('OperationType')?.value || '';
-    if (OperationType.trim() != 'MK') {
-      if (selectedcls.length > 0) {
-        for (var i = 0; i < selectedcls.length; i++) {
-          if (selectedcls[i].GroupCode.trim() == 'TETY') {
-            if (selectedcls[i].ValueCode.trim() != '') {
-              TerritoryCode = selectedcls[i].ValueCode.trim();
-              break;
-            }
-          }
-        }
 
-        if (TerritoryCode == '') {
-          this.http
-            .get(
-              this.siteName() +
-                '/api/SOMNT01/CreateUserMessage?msgNo=300002&msg1=Territory Code in Stock tab&msg2=&msg3=&msg4=&msg5=&msg6'
-            )
-            .subscribe(
-              (jsonData) => {},
-              (err) => {
-                this.showError(err);
-              }
-            );
-        } else {
-          this.showSalesCategoryCode(TerritoryCode);
-        }
-      } else {
-        this.http
-          .get(
-            this.siteName() +
-              '/api/SOMNT01/CreateUserMessage?msgNo=300002&msg1=Territory Code in Stock tab&msg2=&msg3=&msg4=&msg5=&msg6'
-          )
-          .subscribe(
-            (jsonData) => {},
-            (err) => {
-              this.showError(err);
-            }
-          );
-      }
-    } else {
-      this.showSalesCategoryCode(TerritoryCode);
+  lpmtStockLocation_DataBind(): void {
+    const stockTerritory = this.stock.get('StockTerritory')?.value || '';
+    if (this.lpmtStockLocation) {
+      this.lpmtStockLocation.dataSourceObservable =
+        this.executiveService.getStockLocation(stockTerritory.trim());
     }
   }
-  @ViewChild('lpmtDefSaleCategory') lpmtDefSaleCategory!: ListPromptComponent;
-  showSalesCategoryCode(TerritoryCode: string) {
-    const OperationType = this.profile.get('OperationType')?.value || '';
-    this.lpmtDefSaleCategory.dataSourceObservable =
-      this.executiveService.getDefSaleCategory(
-        OperationType.trim(),
-        TerritoryCode.trim()
-      );
+
+  lpmtInspectionLocation_DataBind(): void {
+    const stockTerritory = this.stock.get('StockTerritory')?.value || '';
+    if (this.lpmtInspectionLocation) {
+      this.lpmtInspectionLocation.dataSourceObservable =
+        this.executiveService.getInceptionLocation(stockTerritory.trim());
+    }
+  }
+
+  lpmtSpecialLocation_DataBind(): void {
+    const stockTerritory = this.stock.get('StockTerritory')?.value || '';
+    if (this.lpmtSpecialLocation) {
+      this.lpmtSpecialLocation.dataSourceObservable =
+        this.executiveService.getSpecialLocation(stockTerritory.trim());
+    }
+  }
+
+  lpmtUnloadingLocation_DataBind(): void {
+    const stockTerritory = this.stock.get('StockTerritory')?.value || '';
+    if (this.lpmtUnloadingLocation) {
+      this.lpmtUnloadingLocation.dataSourceObservable =
+        this.executiveService.getUnloadingLocation(stockTerritory.trim());
+    }
+  }
+
+  getCurrentExecutiveType(): string {
+    const clsExecutive = this.clsExecutive.getSelectedClassifications() || [];
+    return (
+      clsExecutive.find((cls) => cls.groupCode === 'EXETYPE')?.valueCode || ''
+    );
+  }
+
+  getCurrentExecutiveclsType(): string {
+    const clsExecutive = this.clsExecutive.getSelectedClassifications() || [];
+    return (
+      clsExecutive.find((cls) => cls.groupCode === 'EXECLAS')?.valueCode || ''
+    );
+  }
+
+  lpmtDefSaleCategory_DataBind(): void {
+    const operationType = this.profile.get('OperationType')?.value || '';
+    const territoryCode = this.stock.get('StockTerritory')?.value || '';
+
+    if (this.lpmtDefSaleCategory) {
+      this.lpmtDefSaleCategory.dataSourceObservable =
+        this.executiveService.getDefSaleCategory(operationType, territoryCode);
+    }
+  }
+
+  lpmtDefEmptyCategory_DataBind(): void {
+    const operationType = this.profile.get('OperationType')?.value || '';
+    const territoryCode = this.stock.get('StockTerritory')?.value || '';
+
+    if (this.lpmtDefEmptyCategory) {
+      this.lpmtDefEmptyCategory.dataSourceObservable =
+        this.executiveService.getDefEmptyCategory(operationType, territoryCode);
+    }
+  }
+
+  lpmtDamageLocation_DataBind(): void {
+    const territoryCode = this.stock.get('StockTerritory')?.value || '';
+
+    if (this.lpmtDamageLocation) {
+      this.lpmtDamageLocation.dataSourceObservable =
+        this.executiveService.getDamageLocation(territoryCode);
+    }
+  }
+  lpmtLoginUser_DataBind(): void {
+    if (this.lpmtLoginUser) {
+      this.lpmtLoginUser.dataSourceObservable =
+        this.executiveService.GetAppLoginUser();
+    }
+  }
+
+  validatePassword(): void {
+    const password = this.profile.get('Password')?.value;
+    const confirmPassword = this.profile.get('ConfirmPassword')?.value;
+
+    if (password !== confirmPassword) {
+      this.profile.get('ConfirmPassword')?.setErrors({ mismatch: true });
+    } else {
+      this.profile.get('ConfirmPassword')?.setErrors(null);
+    }
+  }
+
+  validateIMEINo_OnBlur(): void {
+    const chkValIMEI = this.profile.get('chkValIMEI')?.value;
+    const imeiNo = this.profile.get('IMEINo')?.value;
+
+    if (chkValIMEI && (!imeiNo || imeiNo.trim() === '')) {
+      this.profile.get('IMEINo')?.setErrors({ required: true });
+    } else {
+      this.profile.get('IMEINo')?.setErrors(null);
+    }
+  }
+
+  validateExecutiveProfileUpdate(): boolean {
+    const joiningDate = this.datetimeService.getDateTimeForString(
+      this.profile.get('JoiningDate')?.value?.trim() || ''
+    );
+    const terminationDate = this.datetimeService.getDateTimeForString(
+      this.profile.get('TerminationDate')?.value?.trim() || ''
+    );
+
+    if (joiningDate && terminationDate && joiningDate > terminationDate) {
+      this.profile.get('TerminationDate')?.setErrors({ dateCompare: true });
+      return false;
+    }
+
+    return true;
   }
 }

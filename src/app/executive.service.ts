@@ -262,7 +262,10 @@ export class ExecutiveService {
       )
       .pipe(catchError((error) => this.handleError(error)));
   }
-  public getReturnLocations(ExecutiveCode: any, StockTerritory: any) {
+  public getReturnLocations(
+    ExecutiveCode: any,
+    StockTerritory: any
+  ): Observable<any> {
     return this.http
       .get(
         this.siteName() +
