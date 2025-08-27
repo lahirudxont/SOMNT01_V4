@@ -1,4 +1,3 @@
-// new.component.ts
 import {
   Component,
   OnInit,
@@ -6,8 +5,8 @@ import {
   ViewChild,
   inject,
   signal,
-  computed,
-  ChangeDetectorRef, // Import ChangeDetectorRef
+  ChangeDetectorRef,
+  OnDestroy,
 } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
@@ -21,189 +20,199 @@ import {
   AbstractControl,
   ValidationErrors,
 } from '@angular/forms';
-import { Subscription, Observable, of } from 'rxjs'; // Import Observable, of
+import { Subscription, Observable, of } from 'rxjs';
+import { CommonModule } from '@angular/common';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 // Services
 import { DatetimeService } from '../datetime.service';
 import { CommonService } from '../common.service';
 import { ExecutiveService } from '../executive.service';
 
-// Updated Components
+// Components
 import { XontVenturaMessagePromptComponent } from '../xont-ventura-message-prompt/xont-ventura-message-prompt.component';
 import { ListPromptComponent } from 'xont-ventura-list-prompt';
 import { XontVenturaClassificationSelectorComponent } from '../xont-ventura-classification-selector/xont-ventura-classification-selector.component';
 import { XontVenturaDatepickerComponent } from '../xont-ventura-datepicker/xont-ventura-datepicker.component';
-import { CommonModule } from '@angular/common';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
-// Types (Consider moving these to separate files for better organization)
-interface ExecutiveProfile {
+// Interfaces
+interface SaveAllRequest {
+  Mode: string;
+  ExecutiveProfile: any;
+  Stock: any;
+  Hierarchy: any;
+  Other: any;
+  Merchandizing: any;
+  ExecutiveClassificationList: any[];
+  MarketingHierarchyClassificationList: any[];
+  GeoClassificationList: any[];
+  ReturnLocationList: any[];
+}
+
+interface SelectedClassification {
+  groupCode: string;
+  groupDescription?: string;
+  valueCode: string;
+  valueDescription: string;
+}
+
+interface ExecutiveData {
+  businessUnit: string;
   executiveCode: string;
   executiveName: string;
   executiveGroup: string;
   operationType: string;
   operationTypeDesc: string;
-  incentiveGroup: string;
-  incentiveGroupDesc: string;
   userName: string;
   password: string;
-  confirmPassword: string;
-  passwordExpiry: string | null; // Allow null for dates
-  chkPasswordReset: boolean;
-  chkUserLocked: boolean;
+  passwordExpiry: string;
+  passwordReset: string;
+  userLocked: number;
   authorityLevel: string;
-  retailerType: string;
-  imeiNo: string;
-  chkValIMEI: boolean;
+  newRetailerType: string;
+  imeiNumber: string;
+  validateIMEI: number;
   mobileNumbers: string;
   emailAddress: string;
-  chkActive: boolean;
-  userProfile: string;
-  userProfileName: string;
-  joiningDate: string | null;
-  terminationDate: string | null;
+  status: string;
   timeStamp: string;
   isValidateOperationType: boolean;
-}
-
-interface StockDetails {
-  stockTerritory: string;
-  stockTerritoryDesc: string;
-  defSalesWarehouse: string;
-  defSalesLocation: string;
-  defSalesLocationDes: string;
-  defStockWarehouse: string;
-  defStockLocation: string;
-  defStockLocationDes: string;
-  defReturnWarehouse: string;
-  defReturnLocation: string;
-  defReturnLocationDes: string;
-  defInspectionWarehouse: string;
-  defInspectionLocation: string;
-  defInspectionLocationDes: string;
-  defSpecialWarehouse: string;
-  defSpecialLocation: string;
-  defSpecialLocationDes: string;
-  defUnloadingWarehouse: string;
-  defUnloadingLocation: string;
-  defUnloadingLocationDes: string;
-  salesCategoryCode: string;
-  salesCategoryCodeDes: string;
-  defEmptyTransactionCategory: string;
-  defEmptyTransactionCategoryDesc: string;
-}
-
-interface OtherDetails {
-  chkCreditLimitValidation: boolean;
-  creditLimit: string; // Keep as string if it's formatted
-  commissionPercentage: number | null; // Allow null
-  lastGRNNo: string;
-  cashLimit: string; // Keep as string if it's formatted
-  lastRetailerNo: string;
-  lastOrderNo: string;
+  creditLimitValidation: string;
+  allowPriceChange: string;
+  cashCustomerOnly: string;
+  gisExecutive: string;
+  creditLimit: number;
+  commissionPercentage: string;
+  mappingExecutiveCode: string;
   surveyRecurrence: string;
-  lastSurveyDate: string | null;
-  surveyActiveDate: string | null;
-  chkAllowPriceChange: boolean;
-  chkCashCustomerOnly: boolean;
-  chkGISExecutive: boolean;
+  lastSurveyDate: string;
+  surveyActiveDate: string;
+  cashLimit: number;
+  lastGRNNo: number;
+  lastOrderNo: number;
+  lastRetailerNo: number;
+  autoTMRouteCode: string;
+  tmpsaCodePrefix: string;
+  nextTMPSANo: number;
+  executiveType: string;
   parentExecutiveCode: string;
   parentExecutiveName: string;
   parentExecutiveType: string;
-  executiveType: string;
-  executiveTypeHierarchyLevel: number;
-  hierarchyTimeStamp: any;
-  commissionPercentagevalid: boolean;
-  mappingExecutiveCode: string;
-  applicationType: string;
-  executiveclsType: string;
-  chkOnlineExecutive: boolean;
-  appUserName: string;
-  userFullName: string;
-  parameter: string;
-  parameterDescription: string;
+  applicationUserName: string;
+  hierarchyGroup: string;
+  hierarchyGroupDesc: string;
   costCenterCode: string;
   costCenterDesc: string;
+  onlineExecutive: string;
+  hierarchyTimeStamp: string;
+  defaultTerritory: string;
+  defaultSalesCategoryCode: string;
+  defaultSalesCategoryDesc: string;
+  defaultSalesLocationCode: string;
+  defaultSalesWarehouseCode: string;
+  defaultStockWarehouse: string;
+  defaultStockLocation: string;
+  defaultReturnWarehouse: string;
+  defaultReturnLocation: string;
+  defaultInspectionWarehouse: string;
+  defaultInspectionLocation: string;
+  defaultSpecialWarehouse: string;
+  defaultSpecialLocation: string;
+  defaultUnloadingWarehouse: string;
+  defaultUnloadingLocation: string;
+  stockTerritory: string;
+  stockTerritoryDesc: string;
+  defEmpCatCode: string;
+  defEmpCatDesc: string;
+  applicationType: string;
+  recID: number;
+  orderPrefix: null;
+  bankingFrequency: number;
+  distributorPath: string;
+  downloadUplloadExist: number;
+  dsnName: string;
+  encryptedPassword: null;
+  hierarchyType: string;
+  hhuCode: string;
+  intermedeatePath: string;
+  path: string;
+  lockedBy: string;
+  lockedOn: string;
+  updatedBy: null;
+  userFullName: null;
+  userID: string;
+  incenScheme: string;
+  incenSchemeDesc: string;
 }
 
-interface MerchandizingDetails {
-  chkAutoTMRouteCode: boolean;
-  tmRouteCodePrefix: string;
-  nextTMRouteNo: string;
-}
-
-interface ReturnLocation {
-  returnTypeCode: string;
-  returnTypeDescription: string;
-  locationCode: string;
-  warehouseName: string;
-  locationName: string;
-  warehouseCode: string;
-  status: number;
-  dropDownData: any[];
-}
-
-// Custom Validator for Confirm Password
+// Custom Validators
 function passwordMatchValidator(
   control: AbstractControl
 ): ValidationErrors | null {
-  const password = control.get('password');
-  const confirmPassword = control.get('confirmPassword');
+  const password = control.get('Password');
+  const confirmPassword = control.get('ConfirmPassword');
 
   if (password && confirmPassword && password.value !== confirmPassword.value) {
     confirmPassword.setErrors({ mismatch: true });
-    return { mismatch: true }; // Return error on the group
+    return { mismatch: true };
   } else {
-    confirmPassword?.setErrors(null);
+    if (confirmPassword?.hasError('mismatch')) {
+      confirmPassword.setErrors(null);
+    }
   }
   return null;
 }
 
-// Custom Validator for IMEI
 function imeiValidator(control: AbstractControl): ValidationErrors | null {
   const chkValIMEI = control.get('chkValIMEI')?.value;
-  const imei = control.get('imeiNo')?.value;
+  const imei = control.get('IMEINo')?.value;
 
   if (chkValIMEI && (!imei || imei.trim() === '')) {
+    const imeiControl = control.get('IMEINo');
+    if (imeiControl) {
+      imeiControl.setErrors({ required: true });
+    }
     return { imeiRequired: true };
+  } else {
+    const imeiControl = control.get('IMEINo');
+    if (imeiControl?.hasError('required') && !chkValIMEI) {
+      imeiControl.setErrors(null);
+    }
   }
   return null;
 }
 
 @Component({
-  selector: 'my-new',
+  selector: 'app-executive-new',
   templateUrl: './new.component.html',
   styleUrls: ['./new.component.css'],
   standalone: true,
   imports: [
+    CommonModule,
     ReactiveFormsModule,
+    MatProgressSpinnerModule,
     XontVenturaMessagePromptComponent,
     ListPromptComponent,
     XontVenturaClassificationSelectorComponent,
     XontVenturaDatepickerComponent,
-    CommonModule,
-    MatProgressSpinnerModule,
   ],
 })
-export class NewComponent implements OnInit, AfterViewInit {
-  // Dependency Injection
-  private http = inject(HttpClient);
-  private router = inject(Router);
-  private fb = inject(FormBuilder);
-  private datetimeService = inject(DatetimeService);
-  private commonService = inject(CommonService);
-  private executiveService = inject(ExecutiveService);
-  private cdr = inject(ChangeDetectorRef); // Inject ChangeDetectorRef
+export class NewComponent implements OnInit, AfterViewInit, OnDestroy {
+  private readonly http = inject(HttpClient);
+  private readonly router = inject(Router);
+  private readonly fb = inject(FormBuilder);
+  private readonly datetimeService = inject(DatetimeService);
+  private readonly commonService = inject(CommonService);
+  private readonly executiveService = inject(ExecutiveService);
+  private readonly cdr = inject(ChangeDetectorRef);
 
-  // Main Form Group
-  executiveForm: FormGroup;
+  // Form
+  executiveForm!: FormGroup;
 
-  // View Children
+  // ViewChild references
   @ViewChild('msgPrompt') msgPrompt!: XontVenturaMessagePromptComponent;
   @ViewChild('clsExecutive')
   clsExecutive!: XontVenturaClassificationSelectorComponent;
-  @ViewChild('clsMarketingHierarchy')
-  clsMarketingHierarchy!: XontVenturaClassificationSelectorComponent;
   @ViewChild('clsGeo') clsGeo!: XontVenturaClassificationSelectorComponent;
   @ViewChild('lpmtOptType') lpmtOptType!: ListPromptComponent;
   @ViewChild('lpmtIncentiveGroup')
@@ -214,76 +223,125 @@ export class NewComponent implements OnInit, AfterViewInit {
   @ViewChild('lpmtParameterGroup')
   lpmtParameterGroup!: ListPromptComponent;
   @ViewChild('lpmtLoginUser') lpmtLoginUser!: ListPromptComponent;
-
   @ViewChild('lpmtUnloadingLocation')
   lpmtUnloadingLocation!: ListPromptComponent;
 
-  // Classification Selector Configurations (kept as objects)
-  cls1 = {
+  @ViewChild('lpmtSalesLocation') lpmtSalesLocation!: ListPromptComponent;
+  // Classification configurations
+  readonly cls1 = {
     ID: 'clsExecutive',
     Type: '03',
     TaskCode: 'SOMNT01',
-    LabelWidth: '140px',
-    EnableUserInput: 'false',
-    CodeTextWidth: '120px',
-    DescriptionTextWidth: '320px',
-    ActiveStatus: 'Active',
-    AllMandatory: 'true',
-    LastLevelRequired: 'false',
-    Enabled: 'true',
+    LabelWidth: '140px', //optional default:100px
+    EnableUserInput: 'false', //optional default:true
+    CodeTextWidth: '120px', //optional default:100px
+    DescriptionTextWidth: '320px', //optional default:200px
+    ActiveStatus: 'Active', //optional default:Active
+    AllMandatory: 'true', //optional default:false
+    LastLevelRequired: 'false', //optional default:false
+    Enabled: 'true', ////optional default:true
   };
 
-  cls2 = {
+  readonly cls2 = {
     ID: 'clsMarketingHierarchy',
     Type: '29',
     TaskCode: 'SOMNT01',
-    LabelWidth: '140px',
-    EnableUserInput: 'false',
-    CodeTextWidth: '120px',
-    DescriptionTextWidth: '320px',
-    ActiveStatus: 'Active',
-    AllMandatory: 'false',
-    LastLevelRequired: 'false',
-    Enabled: 'true',
+    LabelWidth: '140px', //optional default:100px
+    EnableUserInput: 'false', //optional default:true
+    CodeTextWidth: '120px', //optional default:100px
+    DescriptionTextWidth: '320px', //optional default:200px
+    ActiveStatus: 'Active', //optional default:Active
+    AllMandatory: 'false', //optional default:false
+    LastLevelRequired: 'false', //optional default:false
+    Enabled: 'true', ////optional default:true
   };
 
-  cls3 = {
+  readonly cls3 = {
     ID: 'clsGeo',
     Type: '00',
     TaskCode: 'SOMNT01',
-    LabelWidth: '140px',
-    EnableUserInput: 'false',
-    CodeTextWidth: '120px',
-    DescriptionTextWidth: '320px',
-    ActiveStatus: 'Active',
-    AllMandatory: 'true', // This might depend on UI logic, e.g., if pnlStockTerritory is visible
-    LastLevelRequired: 'false',
-    Enabled: 'true',
+    LabelWidth: '140px', //optional default:100px
+    EnableUserInput: 'false', //optional default:true
+    CodeTextWidth: '120px', //optional default:100px
+    DescriptionTextWidth: '320px', //optional default:200px
+    ActiveStatus: 'Active', //optional default:Active
+    //AllMandatory: this.pnlStockTerritory.Visible==true?'true':'false',//optional default:false
+    AllMandatory: 'true', //optional default:false
+    LastLevelRequired: 'false', //optional default:false
+    Enabled: 'true', ////optional default:true
+    //,onchange: ''
   };
 
-  // Signals for reactive state
-  isLoading = signal(false);
-  isEditMode = signal(false);
-  isNewBasedOnMode = signal(false);
-  hierarchyType = signal(''); // Default to empty string
-  parentexedisable = signal(false); // Default to false
+  // Signals
+  readonly isLoading = signal(false);
+  readonly isEditMode = signal(false);
+  readonly isNewBasedOnMode = signal(false);
+  readonly hierarchyType = signal('');
+  readonly returnTypes = signal<any[]>([]);
 
-  // Data collections
+  // Data
   executivegroup: any[] = [];
-  returnTypes = signal<ReturnLocation[]>([]);
-
-  // UI state
-  selectedHierarchyIndex = -1;
-  hierarchyIndex = -1;
-
-  busy?: Subscription;
   private pageInit: any = undefined;
-  private executiveData: any = undefined;
+  private executiveData: ExecutiveData | undefined = undefined;
+  private subscriptions = new Set<Subscription>();
 
+  public pnlReturn = { Visible: true };
+  public pnlUserProfile = { Visible: true };
+  public pnlStockDetails = { Visible: true };
+  public pnlStockTerritory = { Visible: true };
   constructor() {
-    // Initialize the main form structure
+    this.initializeForm();
+  }
+
+  ngOnInit(): void {
+    this.loadPageInitialization();
+  }
+
+  ngAfterViewInit(): void {
+    this.loadStoredData();
+    this.cdr.detectChanges();
+  }
+
+  ngOnDestroy(): void {
+    this.subscriptions.forEach((sub) => sub.unsubscribe());
+    this.subscriptions.clear();
+  }
+
+  // Form getters
+  get profile(): FormGroup {
+    return this.executiveForm.get('profile') as FormGroup;
+  }
+
+  get stock(): FormGroup {
+    return this.executiveForm.get('stock') as FormGroup;
+  }
+
+  get other(): FormGroup {
+    return this.executiveForm.get('other') as FormGroup;
+  }
+
+  get merchandizing(): FormGroup {
+    return this.executiveForm.get('merchandizing') as FormGroup;
+  }
+
+  get returnLocations(): FormArray {
+    return this.executiveForm.get('returnLocations') as FormArray;
+  }
+
+  get ExecutiveCode(): FormControl {
+    return this.profile.get('ExecutiveCode') as FormControl;
+  }
+
+  get ExecutiveName(): FormControl {
+    return this.profile.get('ExecutiveName') as FormControl;
+  }
+
+  get CommissionPercentage(): FormControl {
+    return this.other.get('CommissionPercentage') as FormControl;
+  }
+
+  private initializeForm(): void {
     this.executiveForm = this.fb.group({
-      // Profile Tab
       profile: this.fb.group(
         {
           ExecutiveCode: [
@@ -292,7 +350,7 @@ export class NewComponent implements OnInit, AfterViewInit {
           ],
           ExecutiveName: [
             '',
-            [Validators.required, Validators.pattern('^[^&#"\';]*$')], // Corrected pattern
+            [Validators.required, Validators.pattern('^[^&#"\';]*$')],
           ],
           ExecutiveGroup: ['1'],
           OperationType: ['', Validators.required],
@@ -302,34 +360,30 @@ export class NewComponent implements OnInit, AfterViewInit {
           UserName: ['', Validators.pattern('^[a-zA-Z0-9]*$')],
           Password: [''],
           ConfirmPassword: [''],
-          PasswordExpiry: [null], // Use null for dates initially
+          PasswordExpiry: [''],
           chkPasswordReset: [false],
           chkUserLocked: [false],
           AuthorityLevel: ['1'],
           RetailerType: ['0'],
           IMEINo: [''],
           chkValIMEI: [false],
-          MobileNumbers: ['', Validators.pattern('^[0-9;\\d]+$')],
+          MobileNumbers: ['', Validators.pattern('^[0-9;\\d]*$')],
           EmailAddress: [
             '',
             Validators.pattern(
-              '(([a-zA-Z0-9_\\-\\.]+)@((\\[[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.)|(([a-zA-Z0-9\\-]+\\.)+))([a-zA-Z]{2,4}|[0-9]{1,3})(\\]?)(\\s*;\\s*|\\s*$))*'
+              '^(([a-zA-Z0-9_\\-\\.]+)@((\\[[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.)|(([a-zA-Z0-9\\-]+\\.)+))([a-zA-Z]{2,4}|[0-9]{1,3})(\\]?)(\\s*;\\s*|\\s*$))*$'
             ),
           ],
           chkActive: [true],
           UserProfile: [''],
           UserProfileName: [''],
-          JoiningDate: [null],
-          TerminationDate: [null],
+          JoiningDate: [''],
+          TerminationDate: [''],
           TimeStamp: [''],
-          IsValidateOperationType: [false], // Initialize this flag
+          IsValidateOperationType: [true],
         },
-        {
-          validators: [passwordMatchValidator, imeiValidator], // Add custom validators to the group
-        }
+        { validators: [passwordMatchValidator, imeiValidator] }
       ),
-
-      // Stock Tab
       stock: this.fb.group({
         StockTerritory: [''],
         StockTerritoryDesc: [''],
@@ -356,19 +410,17 @@ export class NewComponent implements OnInit, AfterViewInit {
         DefEmptyTransactionCategory: [''],
         DefEmptyTransactionCategoryDesc: [''],
       }),
-
-      // Other Tab
       other: this.fb.group({
         chkCreditLimitValidation: [false],
-        CreditLimit: ['0.00', Validators.pattern('^[0-9.,]+$')],
-        CommissionPercentage: [null], // Allow null
-        LastGRNNo: ['0', Validators.pattern('^[0-9]+$')],
-        CashLimit: ['0.00', Validators.pattern('^[0-9.,]+$')],
-        LastRetailerNo: ['0', Validators.pattern('^[0-9]+$')],
-        LastOrderNo: ['0', Validators.pattern('^[0-9]+$')],
+        CreditLimit: ['0.00', Validators.pattern('^[0-9.,]*$')],
+        CommissionPercentage: [null],
+        LastGRNNo: ['0', Validators.pattern('^[0-9]*$')],
+        CashLimit: ['0.00', Validators.pattern('^[0-9.,]*$')],
+        LastRetailerNo: ['0', Validators.pattern('^[0-9]*$')],
+        LastOrderNo: ['0', Validators.pattern('^[0-9]*$')],
         SurveyRecurrence: [''],
-        LastSurveyDate: [null],
-        SurveyActiveDate: [null],
+        LastSurveyDate: [''],
+        SurveyActiveDate: [''],
         chkAllowPriceChange: [false],
         chkCashCustomerOnly: [false],
         chkGISExecutive: [false],
@@ -377,7 +429,7 @@ export class NewComponent implements OnInit, AfterViewInit {
         ParentExecutiveType: [''],
         ExecutiveType: [''],
         ExecutiveTypeHierarchyLevel: [0],
-        HierarchyTimeStamp: [null], // Initialize timestamp
+        HierarchyTimeStamp: [''],
         CommissionPercentagevalid: [true],
         MappingExecutiveCode: [''],
         ApplicationType: [''],
@@ -390,60 +442,13 @@ export class NewComponent implements OnInit, AfterViewInit {
         CostCenterCode: [''],
         CostCenterDesc: [''],
       }),
-
-      // Merchandizing Tab
       merchandizing: this.fb.group({
         chkAutoTMRouteCode: [false],
-        TMRouteCodePrefix: ['', Validators.pattern('^[A-Za-z0-9_-]+$')],
+        TMRouteCodePrefix: ['', Validators.pattern('^[A-Za-z0-9_-]*$')],
         NextTMRouteNo: [''],
       }),
-
-      // Return Locations (FormArray for dynamic locations)
       returnLocations: this.fb.array([]),
     });
-  }
-
-  ngOnInit(): void {
-    this.loadPageInitialization();
-  }
-
-  ngAfterViewInit(): void {
-    this.loadStoredData();
-    this.cdr.detectChanges();
-  }
-
-  // Form group getters for easier access
-  get profile(): FormGroup {
-    return this.executiveForm.get('profile') as FormGroup;
-  }
-
-  get stock(): FormGroup {
-    return this.executiveForm.get('stock') as FormGroup;
-  }
-
-  get other(): FormGroup {
-    return this.executiveForm.get('other') as FormGroup;
-  }
-
-  get merchandizing(): FormGroup {
-    return this.executiveForm.get('merchandizing') as FormGroup;
-  }
-
-  get returnLocations(): FormArray {
-    return this.executiveForm.get('returnLocations') as FormArray;
-  }
-
-  // Individual control getters (Optional, but can be useful)
-  get ExecutiveCode(): FormControl {
-    return this.profile.get('ExecutiveCode') as FormControl;
-  }
-
-  get ExecutiveName(): FormControl {
-    return this.profile.get('ExecutiveName') as FormControl;
-  }
-
-  get CommissionPercentage(): FormControl {
-    return this.other.get('CommissionPercentage') as FormControl;
   }
 
   private loadPageInitialization(): void {
@@ -472,7 +477,6 @@ export class NewComponent implements OnInit, AfterViewInit {
   private setFormMode(mode: string): void {
     this.isEditMode.set(mode === 'edit');
     this.isNewBasedOnMode.set(mode === 'newBasedOn');
-    // Disable executiveCode if in edit mode
     if (mode === 'edit') {
       this.ExecutiveCode.disable();
     } else {
@@ -481,8 +485,7 @@ export class NewComponent implements OnInit, AfterViewInit {
   }
 
   private initializeNewMode(): void {
-    // executiveCode is enabled by default in the form definition for new mode
-    this.profile.patchValue({ chkActive: true });
+    this.profile.patchValue({ chkActive: true, IsValidateOperationType: true });
     this.LoadReturnLocations();
     this.GetHierarchyType();
   }
@@ -492,29 +495,27 @@ export class NewComponent implements OnInit, AfterViewInit {
   }
 
   private loadExecutiveGroups(): void {
-    this.busy = this.executiveService.getExecutiveGroups().subscribe({
+    const sub = this.executiveService.getExecutiveGroups().subscribe({
       next: (data) => {
         this.executivegroup = data;
-        // Trigger change detection if needed immediately after data load
         this.cdr.markForCheck();
       },
       error: (err) => {
         this.showError(err);
       },
     });
+    this.subscriptions.add(sub);
   }
 
   private loadExecutiveData(): void {
     this.isLoading.set(true);
-
-    this.busy = this.executiveService
+    const sub = this.executiveService
       .getExecutiveData(this.pageInit.executiveCode.trim())
       .subscribe({
         next: (data: any) => {
           this.executiveData = data;
           this.populateFormData();
           this.isLoading.set(false);
-          // Trigger change detection after data load
           this.cdr.markForCheck();
         },
         error: (err: any) => {
@@ -522,82 +523,166 @@ export class NewComponent implements OnInit, AfterViewInit {
           this.isLoading.set(false);
         },
       });
+    this.subscriptions.add(sub);
   }
 
   private populateFormData(): void {
     if (!this.executiveData) return;
 
-    if (this.isEditMode()) {
-      this.populateEditModeData();
-    } else if (this.isNewBasedOnMode()) {
-      this.populateNewBasedOnData();
+    const formatDateForUI = (dateStr: string | null | undefined): string => {
+      if (!dateStr || dateStr === '1900-01-01T00:00:00') return '';
+      try {
+        const dateObj = new Date(dateStr);
+        if (isNaN(dateObj.getTime())) return '';
+        const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+        const day = String(dateObj.getDate()).padStart(2, '0');
+        const year = dateObj.getFullYear();
+        return `${month}/${day}/${year}`;
+      } catch (e) {
+        console.error('Error formatting date:', dateStr, e);
+        return '';
+      }
+    };
+
+    let surveyRecurrenceDisplay = '';
+    switch (this.executiveData.surveyRecurrence?.trim()) {
+      case 'Y':
+        surveyRecurrenceDisplay = 'Year';
+        break;
+      case 'M':
+        surveyRecurrenceDisplay = 'Month';
+        break;
+      case 'W':
+        surveyRecurrenceDisplay = 'Week';
+        break;
+      case 'D':
+        surveyRecurrenceDisplay = 'Date';
+        break;
+      default:
+        surveyRecurrenceDisplay = '';
     }
 
-    this.loadClassificationData();
-    this.loadStockDetails();
-    this.loadOtherDetails();
-  }
-
-  private populateEditModeData(): void {
-    // executiveCode is disabled in setFormMode for edit
+    // Populate Profile Tab
     this.profile.patchValue({
       ExecutiveCode: this.executiveData.executiveCode?.trim() || '',
-      TimeStamp: this.executiveData.timeStamp?.trim() || '',
-      chkUserLocked: this.executiveData.userLocked === '1',
+      ExecutiveName: this.executiveData.executiveName?.trim() || '',
+      ExecutiveGroup: this.executiveData.executiveGroup?.trim() || '1',
+      OperationType: this.executiveData.operationType?.trim() || '',
+      OperationTypeDesc: this.executiveData.operationTypeDesc?.trim() || '',
+      IncentiveGroup: this.executiveData.incenScheme?.trim() || '',
+      IncentiveGroupDesc: this.executiveData.incenSchemeDesc?.trim() || '',
       UserName: this.executiveData.userName?.trim() || '',
-      MobileNumbers: this.executiveData.mobileNumbers?.trim() || '', // Check field name
+      PasswordExpiry: formatDateForUI(this.executiveData.passwordExpiry),
+      chkPasswordReset: this.executiveData.passwordReset === '1',
+      chkUserLocked: this.executiveData.userLocked === 1,
+      AuthorityLevel: this.executiveData.authorityLevel?.trim() || '1',
+      RetailerType: this.executiveData.newRetailerType?.trim() || '0',
+      IMEINo: this.executiveData.imeiNumber?.trim() || '',
+      chkValIMEI: this.executiveData.validateIMEI === 1,
+      MobileNumbers: this.executiveData.mobileNumbers?.trim() || '',
       EmailAddress: this.executiveData.emailAddress?.trim() || '',
-      chkValIMEI: this.executiveData.validateIMEI === '1',
-      IMEINo: this.executiveData.imeiNumber?.trim() || '', // Check field name
-      // Password fields are typically not populated on edit
+      chkActive: this.executiveData.status === '1',
+      TimeStamp: this.executiveData.timeStamp?.trim() || '',
+      IsValidateOperationType:
+        this.executiveData.isValidateOperationType ?? true,
     });
 
+    // Populate Stock Tab
+    this.stock.patchValue({
+      StockTerritory:
+        this.executiveData.defaultTerritory?.trim() ||
+        this.executiveData.stockTerritory?.trim() ||
+        '',
+      DefSalesWarehouse:
+        this.executiveData.defaultSalesWarehouseCode?.trim() || '',
+      DefSalesLocation:
+        this.executiveData.defaultSalesLocationCode?.trim() || '',
+      DefStockWarehouse: this.executiveData.defaultStockWarehouse?.trim() || '',
+      DefStockLocation: this.executiveData.defaultStockLocation?.trim() || '',
+      DefReturnWarehouse:
+        this.executiveData.defaultReturnWarehouse?.trim() || '',
+      DefReturnLocation: this.executiveData.defaultReturnLocation?.trim() || '',
+      DefInspectionWarehouse:
+        this.executiveData.defaultInspectionWarehouse?.trim() || '',
+      DefInspectionLocation:
+        this.executiveData.defaultInspectionLocation?.trim() || '',
+      DefSpecialWarehouse:
+        this.executiveData.defaultSpecialWarehouse?.trim() || '',
+      DefSpecialLocation:
+        this.executiveData.defaultSpecialLocation?.trim() || '',
+      DefUnloadingWarehouse:
+        this.executiveData.defaultUnloadingWarehouse?.trim() || '',
+      DefUnloadingLocation:
+        this.executiveData.defaultUnloadingLocation?.trim() || '',
+      SalesCategoryCode:
+        this.executiveData.defaultSalesCategoryCode?.trim() || '',
+      SalesCategoryCodeDes:
+        this.executiveData.defaultSalesCategoryDesc?.trim() || '',
+      DefEmptyTransactionCategory:
+        this.executiveData.defEmpCatCode?.trim() || '',
+      DefEmptyTransactionCategoryDesc:
+        this.executiveData.defEmpCatDesc?.trim() || '',
+    });
+
+    // Populate Other Tab
     this.other.patchValue({
-      ApplicationType: this.executiveData.applicationType?.trim() || '',
-      CostCenterCode: this.executiveData.costCenterCode?.trim() || '',
-      CostCenterDesc: this.executiveData.costCenterDesc?.trim() || '',
+      chkCreditLimitValidation:
+        this.executiveData.creditLimitValidation === '1',
+      CreditLimit: this.executiveData.creditLimit?.toString() || '0.00',
       CommissionPercentage:
         this.executiveData.commissionPercentage !== null &&
         this.executiveData.commissionPercentage !== undefined
           ? parseFloat(this.executiveData.commissionPercentage)
           : null,
+      LastGRNNo: this.executiveData.lastGRNNo?.toString() || '0',
+      CashLimit: this.executiveData.cashLimit?.toString() || '0.00',
+      LastRetailerNo: this.executiveData.lastRetailerNo?.toString() || '0',
+      LastOrderNo: this.executiveData.lastOrderNo?.toString() || '0',
+      SurveyRecurrence: surveyRecurrenceDisplay,
+      LastSurveyDate: formatDateForUI(this.executiveData.lastSurveyDate),
+      SurveyActiveDate: formatDateForUI(this.executiveData.surveyActiveDate),
+      chkAllowPriceChange: this.executiveData.allowPriceChange === '1',
+      chkCashCustomerOnly: this.executiveData.cashCustomerOnly === '1',
+      chkGISExecutive: this.executiveData.gisExecutive === '1',
+      chkOnlineExecutive: this.executiveData.onlineExecutive === '1',
+      ParentExecutiveCode: this.executiveData.parentExecutiveCode?.trim() || '',
+      ParentExecutiveName: this.executiveData.parentExecutiveName?.trim() || '',
+      ParentExecutiveType: this.executiveData.parentExecutiveType?.trim() || '',
+      ExecutiveType: this.executiveData.executiveType?.trim() || '',
+      CommissionPercentagevalid: true,
       MappingExecutiveCode:
         this.executiveData.mappingExecutiveCode?.trim() || '',
+      ApplicationType: this.executiveData.applicationType?.trim() || '',
+      AppUserName: this.executiveData.applicationUserName?.trim() || '',
+      Parameter: this.executiveData.hierarchyGroup?.trim() || '',
+      ParameterDescription: this.executiveData.hierarchyGroupDesc?.trim() || '',
+      CostCenterCode: this.executiveData.costCenterCode?.trim() || '',
+      CostCenterDesc: this.executiveData.costCenterDesc?.trim() || '',
     });
 
+    // Populate Merchandizing Tab
     this.merchandizing.patchValue({
       chkAutoTMRouteCode: this.executiveData.autoTMRouteCode === '1',
       TMRouteCodePrefix: this.executiveData.tmpsaCodePrefix?.trim() || '',
+      NextTMRouteNo: this.executiveData.nextTMPSANo?.toString() || '',
     });
-  }
 
-  private populateNewBasedOnData(): void {
-    // executiveCode is enabled for newBasedOn
-    this.profile.patchValue({
-      ExecutiveCode: '',
-      chkActive: true,
-      chkUserLocked: this.executiveData?.userLocked === '1' || false,
-      IMEINo: '',
-      chkValIMEI: false,
-      // Copy other relevant fields from executiveData if needed
-    });
+    this.loadClassificationData();
+    this.LoadReturnLocations();
   }
 
   private loadClassificationData(): void {
-    // Only load classification data if we have an executive code (edit or newBasedOn)
     if (this.pageInit?.executiveCode) {
       this.loadExecutiveClassification();
-      this.loadMarketingHierarchyClassification();
       this.loadGeoClassification();
     }
   }
 
   private loadExecutiveClassification(): void {
-    this.busy = this.executiveService
+    const sub = this.executiveService
       .getExecutiveClassificationData(this.pageInit.executiveCode.trim(), '03')
       .subscribe({
-        next: (data: any) => {
-          // Assuming data is an array of classification objects
+        next: (data) => {
           if (data && Array.isArray(data)) {
             this.setClassificationSelections(this.clsExecutive, data);
           }
@@ -606,43 +691,30 @@ export class NewComponent implements OnInit, AfterViewInit {
           this.showError(err);
         },
       });
-  }
-
-  private loadMarketingHierarchyClassification(): void {
-    this.busy = this.executiveService
-      .getExecutiveClassificationData(this.pageInit.executiveCode.trim(), '29')
-      .subscribe({
-        next: (data: any) => {
-          if (data && Array.isArray(data)) {
-            this.setClassificationSelections(this.clsMarketingHierarchy, data);
-          }
-        },
-        error: (err: any) => {
-          this.showError(err);
-        },
-      });
+    this.subscriptions.add(sub);
   }
 
   private loadGeoClassification(): void {
-    this.busy = this.executiveService
+    const sub = this.executiveService
       .getExecutiveClassificationData(this.pageInit.executiveCode.trim(), '00')
       .subscribe({
-        next: (data: any) => {
+        next: (data) => {
           if (data && Array.isArray(data)) {
             this.setClassificationSelections(this.clsGeo, data);
+            this.clsGeo_SelectionChange();
           }
         },
         error: (err: any) => {
           this.showError(err);
         },
       });
+    this.subscriptions.add(sub);
   }
 
   private setClassificationSelections(
     component: XontVenturaClassificationSelectorComponent,
     data: any[]
   ): void {
-    // Ensure component is available (might not be on initial load in some cases)
     if (component) {
       const clsArray = data.map((item) => ({
         groupCode: item.masterGroup?.trim() || '',
@@ -653,138 +725,61 @@ export class NewComponent implements OnInit, AfterViewInit {
     }
   }
 
-  private loadStockDetails(): void {
-    this.stock.patchValue({
-      StockTerritory: this.executiveData?.stockTerritory?.trim() || '',
-      StockTerritoryDesc: this.executiveData?.StockTerritoryDesc?.trim() || '',
-      DefSalesWarehouse:
-        this.executiveData?.defaultSalesWarehouseCode?.trim() || '',
-      DefSalesLocation:
-        this.executiveData?.defaultSalesLocationCode?.trim() || '',
-      DefStockWarehouse:
-        this.executiveData?.defaultStockWarehouse?.trim() || '',
-      DefStockLocation: this.executiveData?.DefaultStockLocation?.trim() || '',
-      DefReturnWarehouse:
-        this.executiveData?.defaultReturnWarehouse?.trim() || '',
-      DefReturnLocation:
-        this.executiveData?.defaultReturnLocation?.trim() || '',
-      DefInspectionWarehouse:
-        this.executiveData?.defaultInspectionWarehouse?.trim() || '',
-      DefInspectionLocation:
-        this.executiveData?.defaultInspectionLocation?.trim() || '',
-      DefSpecialWarehouse:
-        this.executiveData?.defaultSpecialWarehouse?.trim() || '',
-      DefSpecialLocation:
-        this.executiveData?.defaultSpecialLocation?.trim() || '',
-      DefUnloadingWarehouse:
-        this.executiveData?.defaultUnloadingWarehouse?.trim() || '',
-      DefUnloadingLocation:
-        this.executiveData?.defaultUnloadingLocation?.trim() || '',
-      SalesCategoryCode:
-        this.executiveData?.defaultSalesCategoryCode?.trim() || '',
-      SalesCategoryCodeDes:
-        this.executiveData?.defaultSalesCategoryDesc?.trim() || '',
-      DefEmptyTransactionCategory:
-        this.executiveData?.defEmpCatCode?.trim() || '',
-      DefEmptyTransactionCategoryDesc:
-        this.executiveData?.defEmpCatDesc?.trim() || '',
-    });
-  }
-
-  private loadOtherDetails(): void {
-    this.other.patchValue({
-      chkCreditLimitValidation:
-        this.executiveData?.creditLimitValidation === '1',
-      CreditLimit: this.executiveData?.creditLimit || '0.00',
-      chkAllowPriceChange: this.executiveData?.allowPriceChange === '1',
-      chkCashCustomerOnly: this.executiveData?.cashCustomerOnly === '1',
-      chkGISExecutive: this.executiveData?.gisExecutive === '1',
-      chkOnlineExecutive: this.executiveData?.onlineExecutive === '1',
-      ParentExecutiveCode: this.executiveData?.parentExecutiveCode || '',
-      ParentExecutiveName: this.executiveData?.parentExecutiveName || '',
-      ParentExecutiveType: this.executiveData?.parentExecutiveType || '',
-      ExecutiveType: this.executiveData?.executiveType || '',
-      Parameter: this.executiveData?.hierarchyGroup || '', // Check field name
-      ParameterDescription: this.executiveData?.hierarchyGroupDesc || '', // Check field name
-      AppUserName: this.executiveData?.appUserName || '',
-      UserFullName: this.executiveData?.userFullName || '',
-    });
-  }
-
-  // Public methods (Aligned with upgraded component patterns)
-  // Password validation is now handled by the custom validator
-
+  // Public Methods
   clsGeo_SelectionChange(): void {
     const selectedcls = this.clsGeo?.getSelectedClassifications() || [];
-
-    // Reset dependent stock fields
-    this.stock.patchValue({
-      SalesCategoryCode: '',
-      SalesCategoryCodeDes: '',
-      DefSalesWarehouse: '',
-      DefSalesLocation: '',
-      DefSalesLocationDes: '',
-      DefStockWarehouse: '',
-      DefStockLocation: '',
-      DefStockLocationDes: '',
-    });
-
-    // Find territory code (TETY)
     let foundTerritory = false;
+
     for (const item of selectedcls) {
-      if (item.GroupCode?.trim() === 'TETY' && item.valueCode?.trim() !== '') {
+      if (item.groupCode?.trim() === 'TETY' && item.valueCode?.trim() !== '') {
         this.stock.patchValue({
           StockTerritory: item.valueCode.trim(),
-          StockTerritoryDesc: item.valueDescription?.trim() || '',
         });
         foundTerritory = true;
         break;
       }
     }
-    // If no TETY found, clear territory
     if (!foundTerritory) {
       this.stock.patchValue({
         StockTerritory: '',
-        StockTerritoryDesc: '',
       });
     }
-
     this.LoadReturnLocations();
   }
 
   LoadReturnLocations(): void {
     const stockTerritory = this.stock.get('StockTerritory')?.value || '';
-
-    // Use a default observable if stockTerritory is empty
     let returnLocationObservable: Observable<any>;
-    if (stockTerritory) {
+
+    if (stockTerritory && this.pageInit?.executiveCode) {
       returnLocationObservable = this.executiveService.getReturnLocations(
         stockTerritory,
-        this.pageInit?.executiveCode?.trim() || ''
+        this.pageInit.executiveCode.trim()
       );
     } else {
-      returnLocationObservable = of([]); // Return empty array if no territory
+      returnLocationObservable = of([]);
     }
 
-    this.busy = returnLocationObservable.subscribe({
-      next: (data: any) => {
+    const sub = returnLocationObservable.subscribe({
+      next: (data: any[]) => {
         this.returnTypes.set(data || []);
         this.updateReturnLocationsFormArray(data || []);
-        this.cdr.markForCheck(); // Ensure UI updates
+        this.cdr.markForCheck();
       },
       error: (err: any) => {
         this.showError(err);
         this.returnTypes.set([]);
-        this.updateReturnLocationsFormArray([]); // Clear form array on error
+        this.updateReturnLocationsFormArray([]);
       },
     });
+    this.subscriptions.add(sub);
   }
 
   private updateReturnLocationsFormArray(locations: any[]): void {
     const returnLocationsFormArray = this.executiveForm.get(
       'returnLocations'
     ) as FormArray;
-    returnLocationsFormArray.clear(); // Clear existing controls
+    returnLocationsFormArray.clear();
     locations.forEach((location) => {
       returnLocationsFormArray.push(
         this.fb.group({
@@ -794,7 +789,7 @@ export class NewComponent implements OnInit, AfterViewInit {
           WarehouseName: [location.warehouseName || ''],
           LocationName: [location.locationName || ''],
           WarehouseCode: [location.warehouseCode || ''],
-          Status: [location.status !== undefined ? location.status : 1], // Default to 1 if undefined
+          Status: [location.status !== undefined ? location.status : 1],
           DropDownData: [location.dropDownData || []],
         })
       );
@@ -802,48 +797,54 @@ export class NewComponent implements OnInit, AfterViewInit {
   }
 
   ddlReturnType_SelectedIndexChanged(index: number, event: any): void {
-    // Adjusted signature
-    const selectedLocationCode = event?.target?.value; // Get value from event
-    if (!selectedLocationCode) return;
+    const selectedLocationCode = event?.target?.value;
+    if (!selectedLocationCode) {
+      const locationGroup = this.returnLocations.at(index) as FormGroup;
+      if (locationGroup) {
+        locationGroup.patchValue({
+          WarehouseName: '',
+          LocationName: '',
+          WarehouseCode: '',
+        });
+      }
+      return;
+    }
 
     const locationGroup = this.returnLocations.at(index) as FormGroup;
     if (!locationGroup) return;
 
     const dropDownData = locationGroup.get('DropDownData')?.value;
-
     if (Array.isArray(dropDownData)) {
       const selectedOption = dropDownData.find(
         (opt: any) => opt.LocationCode === selectedLocationCode
       );
       if (selectedOption) {
         locationGroup.patchValue({
-          WarehouseName: selectedOption.warehouseDesc || '',
-          LocationName: selectedOption.locationDesc || '',
-          WarehouseCode: selectedOption.warehouseCode || '',
+          WarehouseName: selectedOption.WarehouseDesc || '',
+          LocationName: selectedOption.LocationDesc || '',
+          WarehouseCode: selectedOption.WarehouseCode || '',
         });
       }
     }
   }
 
   GetHierarchyType(): void {
-    this.busy = this.executiveService.GetHierarchyType().subscribe({
+    const sub = this.executiveService.GetHierarchyType().subscribe({
       next: (data) => {
-        this.hierarchyType.set(data || ''); // Set signal, default to empty string
+        this.hierarchyType.set(data || '');
         if (data === '1') {
-          // Check the actual value returned by the service
           this.lpmtParameterGroup_DataBind();
         }
         this.cdr.markForCheck();
       },
       error: (error) => {
         console.error('Error getting hierarchy type:', error);
-        // Handle error appropriately, maybe set a default or show message
       },
     });
+    this.subscriptions.add(sub);
   }
 
   lpmtParameterGroup_DataBind(): void {
-    // Ensure the component is available
     if (this.lpmtParameterGroup) {
       this.lpmtParameterGroup.dataSourceObservable =
         this.executiveService.GetParameterGroup();
@@ -851,7 +852,6 @@ export class NewComponent implements OnInit, AfterViewInit {
   }
 
   lpmtLoginUser_Databind(): void {
-    // Ensure the component is available
     if (this.lpmtLoginUser) {
       this.lpmtLoginUser.dataSourceObservable =
         this.executiveService.GetAppLoginUser();
@@ -871,42 +871,32 @@ export class NewComponent implements OnInit, AfterViewInit {
       const commissionNum = Number(commissionValue);
       isValid = commissionNum >= 0 && commissionNum <= 100;
     } else if (commissionValue !== null && commissionValue !== '') {
-      // If it's not a number but has a value, it's invalid
       isValid = false;
     }
-    // If commissionValue is null or empty, we might consider it valid depending on business rules
-    // Here, we'll assume empty/null is valid unless the field is required elsewhere
+    this.other.patchValue({ CommissionPercentagevalid: isValid });
 
-    this.other.patchValue({
-      CommissionPercentagevalid: isValid,
-    });
-
-    // Optionally, set errors directly on the control
     if (!isValid && commissionValue !== null && commissionValue !== '') {
       commissionControl.setErrors({ invalidCommission: true });
     } else {
-      // Only clear errors if they were specifically 'invalidCommission'
       if (commissionControl.hasError('invalidCommission')) {
         commissionControl.setErrors(null);
       }
     }
+    this.other.updateValueAndValidity();
   }
 
   ValidateIMEINo(): void {
-    // Toggle the checkbox value
     const currentVal = this.profile.get('chkValIMEI')?.value;
     this.profile.patchValue({ chkValIMEI: !currentVal });
-    // The custom validator `imeiValidator` will automatically check validity when the form value changes
-    this.profile.updateValueAndValidity(); // Trigger validation check
   }
 
   chkAutoTMRouteCode_CheckedChanged(): void {
     const isChecked = this.merchandizing.get('chkAutoTMRouteCode')?.value;
-
     const prefixControl = this.merchandizing.get('TMRouteCodePrefix');
+
     if (isChecked) {
       prefixControl?.enable();
-      if (this.isEditMode()) {
+      if (this.isEditMode() && this.pageInit?.executiveCode) {
         this.loadNextTMRouteNo();
       } else {
         this.merchandizing.patchValue({ NextTMRouteNo: '' });
@@ -921,71 +911,214 @@ export class NewComponent implements OnInit, AfterViewInit {
   }
 
   private loadNextTMRouteNo(): void {
-    if (!this.pageInit?.executiveCode) return; // Guard clause
-    this.busy = this.executiveService
+    if (!this.pageInit?.executiveCode) return;
+    const sub = this.executiveService
       .getNextTMRouteNo(this.pageInit.executiveCode.trim())
       .subscribe({
         next: (data: any) => {
-          this.merchandizing.patchValue({ NextTMRouteNo: data || '' });
+          this.merchandizing.patchValue({
+            NextTMRouteNo: data?.toString() || '',
+          });
           this.cdr.markForCheck();
         },
         error: (err: any) => {
           this.showError(err);
         },
       });
+    this.subscriptions.add(sub);
   }
 
   onSubmit(): void {
     if (this.executiveForm.invalid) {
       this.markFormGroupTouched(this.executiveForm);
-      // Optionally, scroll to first invalid control or show a general error message
       console.log('Form is invalid');
       return;
     }
 
     this.isLoading.set(true);
-
     const requestData = this.prepareSubmitData();
+    console.log('Submitting Data:', JSON.stringify(requestData, null, 2));
 
-    this.busy = this.executiveService.saveExecutiveData(requestData).subscribe({
+    const sub = this.executiveService.saveExecutiveData(requestData).subscribe({
       next: (response: any) => {
         this.isLoading.set(false);
-        if (response?.success) {
-          // Check for response and success property
+        console.log('Save Response:', response);
+        if (response === true || response?.success === true) {
           this.router.navigate(['list']);
         } else {
-          this.handleSaveError(response);
+          this.handleSaveError({
+            message: response?.message || response?.toString() || 'Save failed',
+          });
         }
         this.cdr.markForCheck();
       },
       error: (err: any) => {
         this.isLoading.set(false);
+        console.error('Save Error:', err);
         this.showError(err);
       },
     });
+    this.subscriptions.add(sub);
   }
 
-  private prepareSubmitData(): any {
-    // Get selected classifications from components
-    const execClassifications =
+  private prepareSubmitData(): SaveAllRequest {
+    const execClassifications: SelectedClassification[] =
       this.clsExecutive?.getSelectedClassifications() || [];
-    const mktClassifications =
-      this.clsMarketingHierarchy?.getSelectedClassifications() || [];
-    const geoClassifications = this.clsGeo?.getSelectedClassifications() || [];
+    const geoClassifications: SelectedClassification[] =
+      this.clsGeo?.getSelectedClassifications() || [];
 
-    return {
-      Mode: this.pageInit?.mode || 'new', // Default to 'new' if not set
-      ExecutiveProfile: this.profile.value,
-      Stock: this.stock.value,
-      Other: this.other.value,
-      Merchandizing: this.merchandizing.value,
-      executiveClassificationList:
-        this.getClassificationRecords(execClassifications),
-      marketingHierarchyClassificationList:
-        this.getClassificationRecords(mktClassifications),
-      geoClassificationList: this.getClassificationRecords(geoClassifications),
-      ReturnLocationList: this.returnLocations.value,
+    const profileValue = this.profile.value;
+    const stockValue = this.stock.value;
+    const otherValue = this.other.value;
+    const merchValue = this.merchandizing.value;
+
+    let surveyRecurrenceCode = '';
+    switch (otherValue.SurveyRecurrence?.trim()) {
+      case 'Year':
+        surveyRecurrenceCode = 'Y';
+        break;
+      case 'Month':
+        surveyRecurrenceCode = 'M';
+        break;
+      case 'Week':
+        surveyRecurrenceCode = 'W';
+        break;
+      case 'Date':
+        surveyRecurrenceCode = 'D';
+        break;
+      default:
+        surveyRecurrenceCode = '';
+    }
+
+    const request: SaveAllRequest = {
+      Mode: this.pageInit?.mode || 'new',
+      ExecutiveProfile: {
+        ExecutiveCode: profileValue.ExecutiveCode,
+        ExecutiveName: profileValue.ExecutiveName,
+        ExecutiveGroup: profileValue.ExecutiveGroup,
+        OperationType: profileValue.OperationType,
+        OperationTypeDesc: profileValue.OperationTypeDesc,
+        IncentiveGroup: profileValue.IncentiveGroup,
+        IncentiveGroupDesc: profileValue.IncentiveGroupDesc,
+        UserName: profileValue.UserName,
+        Password: profileValue.Password,
+        ConfirmPassword: profileValue.ConfirmPassword,
+        PasswordExpiry: profileValue.PasswordExpiry || '',
+        chkPasswordReset: profileValue.chkPasswordReset,
+        chkUserLocked: profileValue.chkUserLocked,
+        AuthorityLevel: profileValue.AuthorityLevel,
+        RetailerType: profileValue.RetailerType,
+        IMEINo: profileValue.IMEINo,
+        chkValIMEI: profileValue.chkValIMEI,
+        MobileNumbers: profileValue.MobileNumbers,
+        EmailAddress: profileValue.EmailAddress,
+        chkActive: profileValue.chkActive,
+        UserProfile: profileValue.UserProfile,
+        UserProfileName: profileValue.UserProfileName,
+        JoiningDate: profileValue.JoiningDate || '',
+        TerminationDate: profileValue.TerminationDate || '',
+        TimeStamp: profileValue.TimeStamp,
+        IsValidateOperationType: profileValue.IsValidateOperationType,
+      },
+      Stock: {
+        StockTerritory: stockValue.StockTerritory,
+        StockTerritoryDesc: stockValue.StockTerritoryDesc,
+        DefSalesWarehouse: stockValue.DefSalesWarehouse,
+        DefSalesLocation: stockValue.DefSalesLocation,
+        DefSalesLocationDes: stockValue.DefSalesLocationDes,
+        DefStockWarehouse: stockValue.DefStockWarehouse,
+        DefStockLocation: stockValue.DefStockLocation,
+        DefStockLocationDes: stockValue.DefStockLocationDes,
+        DefReturnWarehouse: stockValue.DefReturnWarehouse,
+        DefReturnLocation: stockValue.DefReturnLocation,
+        DefReturnLocationDes: stockValue.DefReturnLocationDes,
+        DefInspectionWarehouse: stockValue.DefInspectionWarehouse,
+        DefInspectionLocation: stockValue.DefInspectionLocation,
+        DefInspectionLocationDes: stockValue.DefInspectionLocationDes,
+        DefSpecialWarehouse: stockValue.DefSpecialWarehouse,
+        DefSpecialLocation: stockValue.DefSpecialLocation,
+        DefSpecialLocationDes: stockValue.DefSpecialLocationDes,
+        DefUnloadingWarehouse: stockValue.DefUnloadingWarehouse,
+        DefUnloadingLocation: stockValue.DefUnloadingLocation,
+        DefUnloadingLocationDes: stockValue.DefUnloadingLocationDes,
+        SalesCategoryCode: stockValue.SalesCategoryCode,
+        SalesCategoryCodeDes: stockValue.SalesCategoryCodeDes,
+        DefEmptyTransactionCategory: stockValue.DefEmptyTransactionCategory,
+        DefEmptyTransactionCategoryDesc:
+          stockValue.DefEmptyTransactionCategoryDesc,
+      },
+      Hierarchy: {
+        HierarchyGroup: '',
+      },
+      Other: {
+        chkCreditLimitValidation: otherValue.chkCreditLimitValidation,
+        CreditLimit: parseFloat(otherValue.CreditLimit) || 0,
+        CommissionPercentage:
+          otherValue.CommissionPercentage !== null
+            ? otherValue.CommissionPercentage.toString()
+            : '',
+        LastGRNNo: parseInt(otherValue.LastGRNNo) || 0,
+        CashLimit: parseFloat(otherValue.CashLimit) || 0,
+        LastRetailerNo: parseInt(otherValue.LastRetailerNo) || 0,
+        LastOrderNo: parseInt(otherValue.LastOrderNo) || 0,
+        SurveyRecurrence: surveyRecurrenceCode,
+        LastSurveyDate: otherValue.LastSurveyDate || '',
+        SurveyActiveDate: otherValue.SurveyActiveDate || '',
+        chkAllowPriceChange: otherValue.chkAllowPriceChange,
+        chkCashCustomerOnly: otherValue.chkCashCustomerOnly,
+        chkGISExecutive: otherValue.chkGISExecutive,
+        ParentExecutiveCode: otherValue.ParentExecutiveCode,
+        ParentExecutiveName: otherValue.ParentExecutiveName,
+        ParentExecutiveType: otherValue.ParentExecutiveType,
+        ExecutiveType: otherValue.ExecutiveType,
+        ExecutiveTypeHierarchyLevel:
+          otherValue.ExecutiveTypeHierarchyLevel || 0,
+        HierarchyTimeStamp: otherValue.HierarchyTimeStamp || '',
+        MappingExecutiveCode: otherValue.MappingExecutiveCode,
+        ApplicationType: otherValue.ApplicationType,
+        ExecutiveclsType: otherValue.ExecutiveclsType,
+        chkOnlineExecutive: otherValue.chkOnlineExecutive,
+        AppUserName: otherValue.AppUserName,
+        UserFullName: otherValue.UserFullName,
+        Parameter: otherValue.Parameter,
+        ParameterDescription: otherValue.ParameterDescription,
+        CostCenterCode: otherValue.CostCenterCode,
+        CostCenterDesc: otherValue.CostCenterDesc,
+      },
+      Merchandizing: {
+        chkAutoTMRouteCode: merchValue.chkAutoTMRouteCode,
+        TMRouteCodePrefix: merchValue.TMRouteCodePrefix,
+        NextTMRouteNo: merchValue.NextTMRouteNo
+          ? parseInt(merchValue.NextTMRouteNo)
+          : 0,
+      },
+      ExecutiveClassificationList:
+        this.mapClassificationsForBackend(execClassifications),
+      MarketingHierarchyClassificationList: [],
+      GeoClassificationList:
+        this.mapClassificationsForBackend(geoClassifications),
+      ReturnLocationList: this.returnLocations.value.map((loc: any) => ({
+        ExecutiveCode: profileValue.ExecutiveCode,
+        ReturnTypeCode: loc.ReturnTypeCode,
+        WarehouseCode: loc.WarehouseCode,
+        LocationCode: loc.LocationCode,
+      })),
     };
+
+    return request;
+  }
+
+  private mapClassificationsForBackend(
+    classifications: SelectedClassification[]
+  ): any[] {
+    return classifications.map((cls) => ({
+      ExecutiveCode: this.profile.get('ExecutiveCode')?.value || '',
+      MasterGroup: cls.groupCode || '',
+      MasterGroupDescription: cls.groupDescription || '',
+      MasterGroupValue: cls.valueCode || '',
+      MasterGroupValueDescription: cls.valueDescription || '',
+      Status: '1',
+    }));
   }
 
   private markFormGroupTouched(formGroup: FormGroup | FormArray): void {
@@ -1002,27 +1135,17 @@ export class NewComponent implements OnInit, AfterViewInit {
   }
 
   private handleSaveError(response: any): void {
-    // Example error handling, adjust based on your API response structure
-    if (response?.errorCode === 1) {
-      const userNameControl = this.profile.get('UserName');
-      if (userNameControl) {
-        userNameControl.setErrors({
-          serverError: response.message || 'Username error',
-        });
-        userNameControl.markAsTouched(); // Mark as touched to show error
-      }
-    } else if (response?.errorCode === 2) {
-      // Handle other specific error codes
-      this.showError({ message: response.message || 'An error occurred.' });
+    if (typeof response?.message === 'string') {
+      this.showError({ message: response.message });
+    } else if (response?.message) {
+      this.showError(response);
     } else {
-      this.showError({
-        message: response?.message || 'An unknown error occurred.',
-      });
+      this.showError({ message: 'An error occurred during save.' });
     }
   }
 
   btnCancel_Click(): void {
-    this.router.navigate(['/list']); // Ensure leading slash
+    this.router.navigate(['list']);
   }
 
   siteName(): string {
@@ -1030,62 +1153,59 @@ export class NewComponent implements OnInit, AfterViewInit {
   }
 
   showError(err: any): void {
-    // Ensure msgPrompt is available
     if (this.msgPrompt) {
-      this.msgPrompt.show(
-        err?.error?.message || err?.message || 'An error occurred',
-        'SOMNT01'
-      );
+      let message = 'An error occurred';
+      if (err?.error?.message) {
+        message = err.error.message;
+      } else if (err?.message) {
+        message = err.message;
+      } else if (typeof err === 'string') {
+        message = err;
+      }
+      this.msgPrompt.show(message, 'SOMNT01');
     } else {
       console.error('Message prompt not available:', err);
     }
   }
 
-  private getClassificationRecords(list: any[]): any[] {
-    return list.map((item) => ({
-      masterGroup: item.groupCode || '',
-      masterGroupDescription: item.groupDescription || '', // Check if this field exists in item
-      masterGroupValue: item.valueCode || '',
-      masterGroupValueDescription: item.valueDescription || '',
-    }));
-  }
-
-  // Operation type change handler (Aligned with upgraded component)
+  // Event Handlers
   lpmtOptType_Changed(event: any): void {
-    // Event type depends on list-prompt implementation
-    // The value should ideally be set by the list-prompt component via ngModel/formControl
-    // If you need to react to the change event specifically:
-    const selectedData = event; // Adjust based on what the list-prompt emits
     const operationType = this.profile.get('OperationType')?.value;
-    const validTypes = ['OR', 'SL', 'BT']; // Define valid types
-
+    const validTypes = ['OR', 'SL', 'BT'];
     const isVisible = operationType && validTypes.includes(operationType);
-    this.profile.patchValue({ IsValidateOperationType: !!isVisible }); // Convert to boolean
+    this.profile.patchValue({ IsValidateOperationType: !!isVisible });
+    if (!isVisible) {
+      //V3008
+      this.pnlReturn.Visible = false;
+      this.pnlStockDetails.Visible = false;
+      this.pnlStockTerritory.Visible = false;
+    } else {
+      this.pnlReturn.Visible = true;
+      this.pnlStockDetails.Visible = true;
+      this.pnlStockTerritory.Visible = true;
+    }
   }
 
-  // Date handlers (Aligned with upgraded component)
   onPasswordExpirySelect(date: string | null): void {
-    // Accept null
-    this.profile.patchValue({ PasswordExpiry: date });
+    this.profile.patchValue({ PasswordExpiry: date || '' });
   }
 
   onJoiningDateSelect(date: string | null): void {
-    this.profile.patchValue({ JoiningDate: date });
+    this.profile.patchValue({ JoiningDate: date || '' });
   }
 
   onTerminationDateSelect(date: string | null): void {
-    this.profile.patchValue({ TerminationDate: date });
+    this.profile.patchValue({ TerminationDate: date || '' });
   }
 
   onLastSurveyDateSelect(date: string | null): void {
-    this.other.patchValue({ LastSurveyDate: date });
+    this.other.patchValue({ LastSurveyDate: date || '' });
   }
 
   onSurveyActiveDateSelect(date: string | null): void {
-    this.other.patchValue({ SurveyActiveDate: date });
+    this.other.patchValue({ SurveyActiveDate: date || '' });
   }
 
-  // List Prompt Data Bind methods (Aligned with upgraded component)
   lpmtOptType_DataBind(): void {
     if (this.lpmtOptType) {
       this.lpmtOptType.dataSourceObservable =
@@ -1107,15 +1227,75 @@ export class NewComponent implements OnInit, AfterViewInit {
     }
   }
 
-  // lpmtCostCenter_DataBind(): void {
-  //   if (this.lpmtCostCenter) {
-  //     this.lpmtCostCenter.dataSourceObservable =
-  //       this.executiveService.getCostCenterPrompt();
-  //   }
-  // }
-  lpmtUnloadingLocation_DataBind() {
+  lpmtUnloadingLocation_DataBind(): void {
     const stockTerritory = this.stock.get('StockTerritory')?.value || '';
-    this.lpmtUnloadingLocation.dataSourceObservable =
-      this.executiveService.getUnloadingLocation(stockTerritory.trim());
+    if (this.lpmtUnloadingLocation) {
+      this.lpmtUnloadingLocation.dataSourceObservable =
+        this.executiveService.getUnloadingLocation(stockTerritory.trim());
+    }
+  }
+  lpmtSalesLocation_DataBind(): void {
+    const stockTerritory = this.stock.get('StockTerritory')?.value || '';
+    if (this.lpmtSalesLocation) {
+      this.lpmtSalesLocation.dataSourceObservable =
+        this.executiveService.getSalesLocation(stockTerritory.trim());
+    }
+  }
+  lpmtDefSaleCategory_DataBind(): void {
+    let selectedcls: any[] = this.clsGeo.getSelectedClassifications();
+    let isUserMsg = false;
+    let TerritoryCode = '';
+    const OperationType = this.profile.get('OperationType')?.value || '';
+    if (OperationType.trim() != 'MK') {
+      if (selectedcls.length > 0) {
+        for (var i = 0; i < selectedcls.length; i++) {
+          if (selectedcls[i].GroupCode.trim() == 'TETY') {
+            if (selectedcls[i].ValueCode.trim() != '') {
+              TerritoryCode = selectedcls[i].ValueCode.trim();
+              break;
+            }
+          }
+        }
+
+        if (TerritoryCode == '') {
+          this.http
+            .get(
+              this.siteName() +
+                '/api/SOMNT01/CreateUserMessage?msgNo=300002&msg1=Territory Code in Stock tab&msg2=&msg3=&msg4=&msg5=&msg6'
+            )
+            .subscribe(
+              (jsonData) => {},
+              (err) => {
+                this.showError(err);
+              }
+            );
+        } else {
+          this.showSalesCategoryCode(TerritoryCode);
+        }
+      } else {
+        this.http
+          .get(
+            this.siteName() +
+              '/api/SOMNT01/CreateUserMessage?msgNo=300002&msg1=Territory Code in Stock tab&msg2=&msg3=&msg4=&msg5=&msg6'
+          )
+          .subscribe(
+            (jsonData) => {},
+            (err) => {
+              this.showError(err);
+            }
+          );
+      }
+    } else {
+      this.showSalesCategoryCode(TerritoryCode);
+    }
+  }
+  @ViewChild('lpmtDefSaleCategory') lpmtDefSaleCategory!: ListPromptComponent;
+  showSalesCategoryCode(TerritoryCode: string) {
+    const OperationType = this.profile.get('OperationType')?.value || '';
+    this.lpmtDefSaleCategory.dataSourceObservable =
+      this.executiveService.getDefSaleCategory(
+        OperationType.trim(),
+        TerritoryCode.trim()
+      );
   }
 }

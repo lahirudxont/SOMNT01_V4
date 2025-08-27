@@ -15,13 +15,7 @@ import { Subscription } from 'rxjs';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { CommonModule, Location } from '@angular/common';
 import { CommonService } from '../common.service';
-import {
-  FormBuilder,
-  FormGroup,
-  FormArray,
-  Validators,
-  ReactiveFormsModule,
-} from '@angular/forms';
+import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 
 @Component({
   selector: 'xont-ventura-classification-selector',
@@ -97,14 +91,14 @@ import {
                   title="Master Group - {{ row.masterGroup }}"
                   (click)="ClickedOn($event, i)"
                   *ngIf="enabled === 'true'"
-                  class="fa fa-angle-double-down clickButton"
+                  class="fa fa-angle-double-down clickButton me-2"
                   aria-hidden="true"
                 >
                 </span>
                 <span
                   type="button"
                   title="Master Group - {{ row.masterGroup }}"
-                  class="fa fa-angle-double-down clickButtonDisabled"
+                  class="fa fa-angle-double-down clickButtonDisabled me-2"
                   *ngIf="enabled === 'false'"
                   aria-hidden="true"
                 >
@@ -536,8 +530,8 @@ export class XontVenturaClassificationSelectorComponent
     if (masterControlData) {
       this._pageSize =
         masterControlData.allowPaging === '1'
-          ? masterControlData.pageSize
-          : masterControlData.extendedPageSize;
+          ? masterControlData?.pageSize ?? 10
+          : masterControlData?.extendedPageSize ?? 10;
     }
 
     this._stillDataLoading = true;
