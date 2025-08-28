@@ -624,6 +624,13 @@
                     targetId="txtJoiningDate"
                     (onDateSelect)="onJoiningDateSelect($event)"
                   ></xont-ventura-datepicker>
+                  <span
+                    *ngIf="profile.get('joiningDate')?.errors?.['required']"
+                    class="text-danger"
+                    style="font-weight: bold"
+                  >
+                    *
+                  </span>
                 </td>
               </tr>
               <tr>

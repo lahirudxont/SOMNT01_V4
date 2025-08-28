@@ -507,6 +507,15 @@ export class NewComponent implements OnInit, AfterViewInit, OnDestroy {
       //this.lpmtCostCenter.mandatory = false;
     } else {
       this.ExecutiveCode.enable();
+      this.setRequired('userProfile');
+      this.setRequired('joiningDate');
+    }
+  }
+  setRequired(controlName: string) {
+    const control = this.profile.get(controlName);
+    if (control) {
+      control.setValidators([Validators.required]);
+      control.updateValueAndValidity();
     }
   }
 
