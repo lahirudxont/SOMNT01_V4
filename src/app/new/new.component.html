@@ -2,13 +2,14 @@
   <form [formGroup]="executiveForm" (ngSubmit)="onSubmit()">
     <div class="row mb-3">
       <div class="col-md-12">
+        <!-- Executive Code and Name Section -->
         <div class="p-3" formGroupName="profile">
           <table class="table table-borderless">
             <tbody>
               <tr>
-                <td width="140">
-                  <label for="txtExecutiveCode" class="Captionstyle"
-                    >Executive Code
+                <td width="150">
+                  <label for="txtExecutiveCode" class="Captionstyle">
+                    Executive Code
                     <span class="text-danger small">*</span>
                   </label>
                 </td>
@@ -37,11 +38,11 @@
                 </td>
               </tr>
               <tr>
-                <td width="140">
-                  <label for="txtExecutiveName" class="Captionstyle"
-                    >Executive Name
-                    <span class="text-danger small">*</span></label
-                  >
+                <td width="150">
+                  <label for="txtExecutiveName" class="Captionstyle">
+                    Executive Name
+                    <span class="text-danger small">*</span>
+                  </label>
                 </td>
                 <td>
                   <input
@@ -69,6 +70,8 @@
             </tbody>
           </table>
         </div>
+
+        <!-- Tab Navigation -->
         <ul class="nav nav-tabs" id="executiveTabs" role="tablist">
           <!-- Profile Tab -->
           <li class="nav-item" role="presentation">
@@ -85,6 +88,7 @@
               Profile
             </button>
           </li>
+
           <!-- Stock Tab -->
           <li class="nav-item" role="presentation">
             <button
@@ -100,6 +104,7 @@
               Stock
             </button>
           </li>
+
           <!-- Return Tab -->
           <li class="nav-item" role="presentation">
             <button
@@ -116,6 +121,7 @@
               Return
             </button>
           </li>
+
           <!-- Other Tab -->
           <li class="nav-item" role="presentation">
             <button
@@ -131,6 +137,7 @@
               Other
             </button>
           </li>
+
           <!-- Merchandizing Tab -->
           <li class="nav-item" role="presentation">
             <button
@@ -150,6 +157,7 @@
       </div>
     </div>
 
+    <!-- Tab Content -->
     <div class="tab-content" id="executiveTabContent">
       <!-- Profile Tab Content -->
       <div
@@ -163,7 +171,7 @@
           <table class="table table-borderless">
             <tbody>
               <tr>
-                <td width="140">
+                <td width="150">
                   <label for="ddlExecutiveGroup" class="Captionstyle"
                     >Executive Group</label
                   >
@@ -183,6 +191,7 @@
                   </select>
                 </td>
               </tr>
+
               <tr>
                 <td [colSpan]="2">
                   <xont-ventura-classification-selector
@@ -199,16 +208,15 @@
                     [allMandatory]="cls1.AllMandatory"
                     [lastLevelRequired]="cls1.LastLevelRequired"
                     (onChange)="clsExecutive_OnChange()"
-                  >
-                  </xont-ventura-classification-selector>
+                  ></xont-ventura-classification-selector>
                 </td>
               </tr>
 
               <tr>
-                <td width="140">
+                <td width="150">
                   <label for="lpmtOptType" class="Captionstyle"
-                    >Operation Type
-                  </label>
+                    >Operation Type</label
+                  >
                 </td>
                 <td>
                   <xont-ventura-list-prompt
@@ -237,6 +245,7 @@
                   }
                 </td>
               </tr>
+
               <tr>
                 <td colspan="2">
                   <xont-ventura-classification-selector
@@ -254,8 +263,9 @@
                   ></xont-ventura-classification-selector>
                 </td>
               </tr>
+
               <tr>
-                <td width="140">
+                <td width="150">
                   <label for="lpmtIncentiveGroup" class="Captionstyle"
                     >Incentive Group</label
                   >
@@ -278,8 +288,9 @@
                   ></xont-ventura-list-prompt>
                 </td>
               </tr>
+
               <tr>
-                <td width="140">
+                <td width="150">
                   <label for="txtUserName" class="Captionstyle"
                     >User Name</label
                   >
@@ -308,11 +319,10 @@
                   }}</small>
                 </td>
               </tr>
+
               <tr>
-                <td width="140">
-                  <label for="txtPassword" class="Captionstyle"
-                    >Password
-                  </label>
+                <td width="150">
+                  <label for="txtPassword" class="Captionstyle">Password</label>
                 </td>
                 <td>
                   <input
@@ -333,11 +343,12 @@
                   <small class="Errormessagetextstyle">{{ lblMsg }}</small>
                 </td>
               </tr>
+
               <tr>
-                <td width="140">
+                <td width="150">
                   <label for="txtConfirmPassword" class="Captionstyle"
-                    >Confirm Password
-                  </label>
+                    >Confirm Password</label
+                  >
                 </td>
                 <td>
                   <input
@@ -366,8 +377,9 @@
                   }}</small>
                 </td>
               </tr>
+
               <tr>
-                <td width="140">
+                <td width="150">
                   <label for="datepickerID1" class="Captionstyle"
                     >Password Expiry</label
                   >
@@ -392,8 +404,9 @@
                   }}</small>
                 </td>
               </tr>
+
               <tr>
-                <td width="140">
+                <td width="150">
                   <label class="Captionstyle">Password Reset</label>
                 </td>
                 <td>
@@ -407,8 +420,9 @@
                   </div>
                 </td>
               </tr>
+
               <tr>
-                <td width="140">
+                <td width="150">
                   <label for="ddlAuthorityLevel" class="Captionstyle"
                     >Authority Level</label
                   >
@@ -433,8 +447,9 @@
                   </select>
                 </td>
               </tr>
+
               <tr>
-                <td width="140">
+                <td width="150">
                   <label class="Captionstyle">User Locked</label>
                 </td>
                 <td>
@@ -448,8 +463,9 @@
                   </div>
                 </td>
               </tr>
+
               <tr>
-                <td width="140">
+                <td width="150">
                   <label for="ddlRetailerType" class="Captionstyle"
                     >Retailer Maintenance</label
                   >
@@ -470,8 +486,9 @@
                   </select>
                 </td>
               </tr>
+
               <tr>
-                <td width="140">
+                <td width="150">
                   <label for="txtIMEINo" class="Captionstyle"
                     >Device IMEI No</label
                   >
@@ -506,8 +523,9 @@
                   </div>
                 </td>
               </tr>
+
               <tr>
-                <td width="140">
+                <td width="150">
                   <label for="txtMobileNumbers" class="Captionstyle"
                     >Mobile Numbers</label
                   >
@@ -534,8 +552,9 @@
                   }
                 </td>
               </tr>
+
               <tr>
-                <td width="140">
+                <td width="150">
                   <label for="txtEmailAddress" class="Captionstyle"
                     >Email Address</label
                   >
@@ -560,8 +579,9 @@
                   }
                 </td>
               </tr>
+
               <tr>
-                <td width="140">
+                <td width="150">
                   <label class="Captionstyle">Active</label>
                 </td>
                 <td>
@@ -577,10 +597,11 @@
               </tr>
             </tbody>
           </table>
+
           <table id="pnlUserProfile" [hidden]="!pnlUserProfile.Visible">
             <tbody>
               <tr>
-                <td width="140">
+                <td width="150">
                   <label for="lpmtUserProfile" class="Captionstyle"
                     >User Profile</label
                   >
@@ -603,8 +624,9 @@
                   ></xont-ventura-list-prompt>
                 </td>
               </tr>
+
               <tr>
-                <td width="140">
+                <td width="150">
                   <label for="datepickerID2" class="Captionstyle"
                     >Joining Date</label
                   >
@@ -633,8 +655,9 @@
                   </span>
                 </td>
               </tr>
+
               <tr>
-                <td width="140">
+                <td width="150">
                   <label for="datepickerID3" class="Captionstyle"
                     >Termination Date</label
                   >
@@ -656,6 +679,7 @@
                   ></xont-ventura-datepicker>
                 </td>
               </tr>
+
               <tr>
                 <td>
                   <input type="hidden" formControlName="timeStamp" />
@@ -702,15 +726,15 @@
                       [allMandatory]="cls3.AllMandatory"
                       [lastLevelRequired]="cls3.LastLevelRequired"
                       (onChange)="clsGeo_SelectionChange()"
-                    >
-                    </xont-ventura-classification-selector>
+                    ></xont-ventura-classification-selector>
                   </td>
                 </tr>
+
                 <tr
                   id="pnlStockTerritory"
                   [hidden]="!pnlStockTerritory.Visible"
                 >
-                  <td width="140">
+                  <td width="150">
                     <label for="lpmtStockTerritory" class="Captionstyle"
                       >Stock Territory</label
                     >
@@ -742,13 +766,14 @@
               </fieldset>
             </tbody>
           </table>
+
           <table id="pnlStockDetails" [hidden]="!pnlStockDetails.Visible">
             <tbody>
               <fieldset>
                 <legend class="GridCaptionstyle">Default Locations</legend>
 
                 <tr>
-                  <td width="140">
+                  <td width="150">
                     <label for="lpmtSalesLocation" class="Captionstyle"
                       >Sales Location</label
                     >
@@ -787,8 +812,9 @@
                     ></xont-ventura-list-prompt>
                   </td>
                 </tr>
+
                 <tr>
-                  <td width="140">
+                  <td width="150">
                     <label for="lpmtStockLocation" class="Captionstyle"
                       >Stock Location</label
                     >
@@ -827,8 +853,9 @@
                     ></xont-ventura-list-prompt>
                   </td>
                 </tr>
+
                 <tr>
-                  <td width="140">
+                  <td width="150">
                     <label for="lpmtDamageLocation" class="Captionstyle"
                       >Damage Location</label
                     >
@@ -867,8 +894,9 @@
                     ></xont-ventura-list-prompt>
                   </td>
                 </tr>
+
                 <tr>
-                  <td width="140">
+                  <td width="150">
                     <label for="lpmtInceptionLocation" class="Captionstyle"
                       >Inspection Location</label
                     >
@@ -907,8 +935,9 @@
                     ></xont-ventura-list-prompt>
                   </td>
                 </tr>
+
                 <tr>
-                  <td width="140">
+                  <td width="150">
                     <label for="lpmtSpecialLocation" class="Captionstyle"
                       >Special Location</label
                     >
@@ -947,8 +976,9 @@
                     ></xont-ventura-list-prompt>
                   </td>
                 </tr>
+
                 <tr>
-                  <td width="140">
+                  <td width="150">
                     <label for="lpmtUnloadingLocation" class="Captionstyle"
                       >Unloading Location</label
                     >
@@ -988,11 +1018,12 @@
                   </td>
                 </tr>
               </fieldset>
+
               <fieldset>
                 <legend class="GridCaptionstyle">Other Details</legend>
 
                 <tr>
-                  <td width="140">
+                  <td width="150">
                     <label for="lpmtDefSaleCategory" class="Captionstyle"
                       >Def.Sales Category</label
                     >
@@ -1018,8 +1049,9 @@
                     ></xont-ventura-list-prompt>
                   </td>
                 </tr>
+
                 <tr>
-                  <td width="140">
+                  <td width="150">
                     <label for="lpmtDefEmptyCategory" class="Captionstyle"
                       >Def.Empty Category</label
                     >
@@ -1143,217 +1175,228 @@
         <div class="p-3">
           <table class="table table-borderless">
             <tbody>
-              <tr>
-                <td width="145">
-                  <label class="Captionstyle">Credit Limit Validation</label>
-                </td>
-                <td>
-                  <div class="form-check">
+              <fieldset>
+                <tr>
+                  <td width="150">
+                    <label class="Captionstyle">Credit Limit Validation</label>
+                  </td>
+                  <td>
+                    <div class="form-check">
+                      <input
+                        class="form-check-input"
+                        type="checkbox"
+                        id="chkCreditLimitValidation"
+                        formControlName="chkCreditLimitValidation"
+                      />
+                    </div>
+                  </td>
+                  <td width="50"></td>
+                  <td width="150">
+                    <label for="txtCreditLimit" class="Captionstyle"
+                      >Credit Limit</label
+                    >
+                  </td>
+                  <td>
                     <input
-                      class="form-check-input"
-                      type="checkbox"
-                      id="chkCreditLimitValidation"
-                      formControlName="chkCreditLimitValidation"
+                      type="text"
+                      id="txtCreditLimit"
+                      class="Textboxstyle"
+                      style="width: 120px; text-align: right"
+                      formControlName="creditLimit"
                     />
-                  </div>
-                </td>
-                <td width="145">
-                  <label for="txtCreditLimit" class="Captionstyle"
-                    >Credit Limit</label
-                  >
-                </td>
-                <td>
-                  <input
-                    type="text"
-                    id="txtCreditLimit"
-                    class="Textboxstyle"
-                    style="width: 120px; text-align: right"
-                    formControlName="creditLimit"
-                  />
-                  @if (other.get('creditLimit')?.invalid &&
-                  other.get('creditLimit')?.touched) {
-                  <div class="text-danger small">
-                    @if (other.get('creditLimit')?.errors?.['pattern']) {
-                    <div>Invalid Entry (Numbers and Decimal)</div>
+                    @if (other.get('creditLimit')?.invalid &&
+                    other.get('creditLimit')?.touched) {
+                    <div class="text-danger small">
+                      @if (other.get('creditLimit')?.errors?.['pattern']) {
+                      <div>Invalid Entry (Numbers and Decimal)</div>
+                      }
+                    </div>
                     }
-                  </div>
-                  }
-                </td>
-              </tr>
-              <tr>
-                <td width="145">
-                  <label for="txtLastGRNNo" class="Captionstyle"
-                    >Last GRN No</label
-                  >
-                </td>
-                <td>
-                  <input
-                    type="text"
-                    id="txtLastGRNNo"
-                    class="Textboxstyle"
-                    style="width: 120px; text-align: right"
-                    formControlName="lastGRNNo"
-                  />
-                  @if (other.get('lastGRNNo')?.invalid &&
-                  other.get('lastGRNNo')?.touched) {
-                  <div class="text-danger small">
-                    @if (other.get('lastGRNNo')?.errors?.['pattern']) {
-                    <div>Invalid Entry (Numbers)</div>
-                    }
-                  </div>
-                  }
-                </td>
+                  </td>
+                </tr>
 
-                <td width="145">
-                  <label for="txtCashLimit" class="Captionstyle"
-                    >Cash Limit</label
-                  >
-                </td>
-                <td>
-                  <input
-                    type="text"
-                    id="txtCashLimit"
-                    class="Textboxstyle"
-                    style="width: 120px; text-align: right"
-                    formControlName="cashLimit"
-                  />
-                  @if (other.get('cashLimit')?.invalid &&
-                  other.get('cashLimit')?.touched) {
-                  <div class="text-danger small">
-                    @if (other.get('cashLimit')?.errors?.['pattern']) {
-                    <div>Invalid Entry (Numbers and Decimal)</div>
+                <tr>
+                  <td width="150">
+                    <label for="txtLastGRNNo" class="Captionstyle"
+                      >Last GRN No</label
+                    >
+                  </td>
+                  <td>
+                    <input
+                      type="text"
+                      id="txtLastGRNNo"
+                      class="Textboxstyle"
+                      style="width: 120px; text-align: right"
+                      formControlName="lastGRNNo"
+                    />
+                    @if (other.get('lastGRNNo')?.invalid &&
+                    other.get('lastGRNNo')?.touched) {
+                    <div class="text-danger small">
+                      @if (other.get('lastGRNNo')?.errors?.['pattern']) {
+                      <div>Invalid Entry (Numbers)</div>
+                      }
+                    </div>
                     }
-                  </div>
-                  }
-                </td>
-              </tr>
-              <tr>
-                <td width="145">
-                  <label for="txtLastRetailerNo" class="Captionstyle"
-                    >Last Retailer No</label
-                  >
-                </td>
-                <td>
-                  <input
-                    type="text"
-                    id="txtLastRetailerNo"
-                    class="Textboxstyle"
-                    style="width: 120px; text-align: right"
-                    formControlName="lastRetailerNo"
-                  />
-                  @if (other.get('lastRetailerNo')?.invalid &&
-                  other.get('lastRetailerNo')?.touched) {
-                  <div class="text-danger small">
-                    @if (other.get('lastRetailerNo')?.errors?.['pattern']) {
-                    <div>Invalid Entry (Numbers)</div>
-                    }
-                  </div>
-                  }
-                </td>
-                <td width="145">
-                  <label for="txtLastOrderNo" class="Captionstyle"
-                    >Last Order No</label
-                  >
-                </td>
-                <td>
-                  <input
-                    type="text"
-                    id="txtLastOrderNo"
-                    class="Textboxstyle"
-                    style="width: 120px; text-align: right"
-                    formControlName="lastOrderNo"
-                  />
-                  @if (other.get('lastOrderNo')?.invalid &&
-                  other.get('lastOrderNo')?.touched) {
-                  <div class="text-danger small">
-                    @if (other.get('lastOrderNo')?.errors?.['pattern']) {
-                    <div>Invalid Entry (Numbers)</div>
-                    }
-                  </div>
-                  }
-                </td>
-              </tr>
-              <tr>
-                <td width="145">
-                  <label for="txtCommissionPercentage" class="Captionstyle"
-                    >Commission Percentage</label
-                  >
-                </td>
-                <td>
-                  <input
-                    type="text"
-                    id="txtCommissionPercentage"
-                    class="Textboxstyle"
-                    style="width: 120px; text-align: right"
-                    formControlName="commissionPercentage"
-                    (blur)="validateCommissionPercentage()"
-                  />
-                  @if (!other.get('commissionPercentagevalid')?.value) {
-                  <div class="text-danger small">
-                    Invalid Percentage (0-100)
-                  </div>
-                  }
-                </td>
-                <td width="145">
-                  <label for="txtApplicationType" class="Captionstyle"
-                    >Applicaion Type</label
-                  >
-                </td>
-                <td>
-                  <input
-                    type="text"
-                    id="txtApplicationType"
-                    class="Textboxstyle"
-                    style="width: 120px; text-align: right"
-                    formControlName="applicationType"
-                    readonly
-                  />
-                </td>
-              </tr>
-              <tr>
-                <td width="145">
-                  <label for="txtMappingExecutiveCode" class="Captionstyle"
-                    >Mapping Executive Code</label
-                  >
-                </td>
-                <td>
-                  <input
-                    type="text"
-                    id="txtMappingExecutiveCode"
-                    class="Textboxstyle"
-                    style="width: 120px"
-                    formControlName="mappingExecutiveCode"
-                    maxlength="10"
-                  />
-                </td>
+                  </td>
 
-                <td width="145">
-                  <label for="lpmtCostCenter" class="Captionstyle"
-                    >Cost Center</label
-                  >
-                </td>
-                <td>
-                  <xont-ventura-list-prompt
-                    id="lpmtCostCenter"
-                    name="lpmtCostCenter"
-                    #lpmtCostCenter
-                    [maxLengths]="[10, 50]"
-                    [inputWidths]="[100, 250]"
-                    [gridHeaders]="['Code', 'Description']"
-                    [gridFields]="['code', 'description']"
-                    [mandatory]="false"
-                    [strict]="true"
-                    [control]="other"
-                    [modelProps]="['costCenterCode', 'costCenterDesc']"
-                    [dataFields]="['code', 'description']"
-                  ></xont-ventura-list-prompt>
-                </td>
-              </tr>
+                  <td width="50"></td>
+                  <td width="150">
+                    <label for="txtCashLimit" class="Captionstyle"
+                      >Cash Limit</label
+                    >
+                  </td>
+                  <td>
+                    <input
+                      type="text"
+                      id="txtCashLimit"
+                      class="Textboxstyle"
+                      style="width: 120px; text-align: right"
+                      formControlName="cashLimit"
+                    />
+                    @if (other.get('cashLimit')?.invalid &&
+                    other.get('cashLimit')?.touched) {
+                    <div class="text-danger small">
+                      @if (other.get('cashLimit')?.errors?.['pattern']) {
+                      <div>Invalid Entry (Numbers and Decimal)</div>
+                      }
+                    </div>
+                    }
+                  </td>
+                </tr>
+
+                <tr>
+                  <td width="150">
+                    <label for="txtLastRetailerNo" class="Captionstyle"
+                      >Last Retailer No</label
+                    >
+                  </td>
+                  <td>
+                    <input
+                      type="text"
+                      id="txtLastRetailerNo"
+                      class="Textboxstyle"
+                      style="width: 120px; text-align: right"
+                      formControlName="lastRetailerNo"
+                    />
+                    @if (other.get('lastRetailerNo')?.invalid &&
+                    other.get('lastRetailerNo')?.touched) {
+                    <div class="text-danger small">
+                      @if (other.get('lastRetailerNo')?.errors?.['pattern']) {
+                      <div>Invalid Entry (Numbers)</div>
+                      }
+                    </div>
+                    }
+                  </td>
+                  <td width="50"></td>
+                  <td width="150">
+                    <label for="txtLastOrderNo" class="Captionstyle"
+                      >Last Order No</label
+                    >
+                  </td>
+                  <td>
+                    <input
+                      type="text"
+                      id="txtLastOrderNo"
+                      class="Textboxstyle"
+                      style="width: 120px; text-align: right"
+                      formControlName="lastOrderNo"
+                    />
+                    @if (other.get('lastOrderNo')?.invalid &&
+                    other.get('lastOrderNo')?.touched) {
+                    <div class="text-danger small">
+                      @if (other.get('lastOrderNo')?.errors?.['pattern']) {
+                      <div>Invalid Entry (Numbers)</div>
+                      }
+                    </div>
+                    }
+                  </td>
+                </tr>
+
+                <tr>
+                  <td width="150">
+                    <label for="txtCommissionPercentage" class="Captionstyle"
+                      >Commission Percentage</label
+                    >
+                  </td>
+                  <td>
+                    <input
+                      type="text"
+                      id="txtCommissionPercentage"
+                      class="Textboxstyle"
+                      style="width: 120px; text-align: right"
+                      formControlName="commissionPercentage"
+                      (blur)="validateCommissionPercentage()"
+                    />
+                    @if (!other.get('commissionPercentagevalid')?.value) {
+                    <div class="text-danger small">
+                      Invalid Percentage (0-100)
+                    </div>
+                    }
+                  </td>
+                  <td width="50"></td>
+                  <td width="150">
+                    <label for="txtApplicationType" class="Captionstyle"
+                      >Applicaion Type</label
+                    >
+                  </td>
+                  <td>
+                    <input
+                      type="text"
+                      id="txtApplicationType"
+                      class="Textboxstyle"
+                      style="width: 120px; text-align: right"
+                      formControlName="applicationType"
+                      readonly
+                    />
+                  </td>
+                </tr>
+
+                <tr>
+                  <td width="150">
+                    <label for="txtMappingExecutiveCode" class="Captionstyle"
+                      >Mapping Executive Code</label
+                    >
+                  </td>
+                  <td>
+                    <input
+                      type="text"
+                      id="txtMappingExecutiveCode"
+                      class="Textboxstyle"
+                      style="width: 120px"
+                      formControlName="mappingExecutiveCode"
+                      maxlength="10"
+                    />
+                  </td>
+
+                  <td width="50"></td>
+                  <td width="150">
+                    <label for="lpmtCostCenter" class="Captionstyle"
+                      >Cost Center</label
+                    >
+                  </td>
+                  <td>
+                    <xont-ventura-list-prompt
+                      id="lpmtCostCenter"
+                      name="lpmtCostCenter"
+                      #lpmtCostCenter
+                      [maxLengths]="[10, 50]"
+                      [inputWidths]="[100, 250]"
+                      [gridHeaders]="['Code', 'Description']"
+                      [gridFields]="['code', 'description']"
+                      [mandatory]="false"
+                      [strict]="true"
+                      [control]="other"
+                      [modelProps]="['costCenterCode', 'costCenterDesc']"
+                      [dataFields]="['code', 'description']"
+                    ></xont-ventura-list-prompt>
+                  </td>
+                </tr>
+              </fieldset>
               <fieldset>
                 <legend class="GridCaptionstyle">Survey</legend>
 
                 <tr>
-                  <td width="145">
+                  <td width="150">
                     <label for="ddlSurveyRecurrence" class="Captionstyle"
                       >Survey Recurrence</label
                     >
@@ -1361,11 +1404,11 @@
                   <td>
                     <select
                       id="ddlSurveyRecurrence"
-                      class="form-select"
+                      class="form-select form-select-sm"
                       style="width: 120px"
                       formControlName="surveyRecurrence"
                     >
-                      <option value="">Select</option>
+                      <option value=""></option>
                       <option value="Year">Year</option>
                       <option value="Month">Month</option>
                       <option value="Week">Week</option>
@@ -1375,7 +1418,7 @@
                 </tr>
 
                 <tr>
-                  <td width="145">
+                  <td width="150">
                     <label for="datepickerID4" class="Captionstyle"
                       >Last Survey Date</label
                     >
@@ -1397,8 +1440,9 @@
                     ></xont-ventura-datepicker>
                   </td>
                 </tr>
+
                 <tr>
-                  <td width="145">
+                  <td width="150">
                     <label for="datepickerID5" class="Captionstyle"
                       >Survey Active Date</label
                     >
@@ -1421,11 +1465,12 @@
                   </td>
                 </tr>
               </fieldset>
+
               <fieldset>
                 <legend class="GridCaptionstyle">Settings</legend>
 
                 <tr>
-                  <td width="145">
+                  <td width="150">
                     <label class="Captionstyle">Allow Price Change</label>
                   </td>
                   <td>
@@ -1438,7 +1483,8 @@
                       />
                     </div>
                   </td>
-                  <td width="145">
+                  <td width="50"></td>
+                  <td width="150">
                     <label class="Captionstyle">Cash Customer Only</label>
                   </td>
                   <td>
@@ -1452,8 +1498,9 @@
                     </div>
                   </td>
                 </tr>
+
                 <tr>
-                  <td width="145">
+                  <td width="150">
                     <label class="Captionstyle">GIS Executive</label>
                   </td>
                   <td>
@@ -1466,7 +1513,8 @@
                       />
                     </div>
                   </td>
-                  <td width="145">
+                  <td width="50"></td>
+                  <td width="150">
                     <label class="Captionstyle">Online Executive</label>
                   </td>
                   <td>
@@ -1481,11 +1529,12 @@
                   </td>
                 </tr>
               </fieldset>
+
               <fieldset>
                 <legend class="GridCaptionstyle">Executive Hierarchy</legend>
 
                 <tr [hidden]="hierarchyType() == '1'">
-                  <td width="145">
+                  <td width="150">
                     <label for="lpmtExecutiveHierarchy" class="Captionstyle"
                       >Parent Executive</label
                     >
@@ -1525,8 +1574,9 @@
                     ></xont-ventura-list-prompt>
                   </td>
                 </tr>
+
                 <tr [hidden]="hierarchyType() == '0'">
-                  <td width="145">
+                  <td width="150">
                     <label for="lpmtParameterGroup" class="Captionstyle"
                       >Hierarchy Group</label
                     >
@@ -1550,11 +1600,12 @@
                   </td>
                 </tr>
               </fieldset>
+
               <fieldset>
                 <legend class="GridCaptionstyle">Application Login User</legend>
 
                 <tr>
-                  <td width="145">
+                  <td width="150">
                     <label for="lpmtLoginUser" class="Captionstyle"
                       >App. Login User</label
                     >
@@ -1578,6 +1629,7 @@
                   </td>
                 </tr>
               </fieldset>
+
               <!-- Hidden TimeStamp for Other -->
               <tr style="display: none">
                 <td>
@@ -1598,71 +1650,77 @@
         formGroupName="merchandizing"
       >
         <div class="p-3">
-          <table class="table table-borderless">
-            <tbody>
-              <tr>
-                <td width="140">
-                  <label class="Captionstyle">Auto TM Route Code</label>
-                </td>
-                <td>
-                  <div class="form-check">
+          <fieldset>
+            <table class="table table-borderless">
+              <tbody>
+                <tr>
+                  <td width="150">
+                    <label class="Captionstyle">Auto TM Route Code</label>
+                  </td>
+                  <td>
+                    <div class="form-check">
+                      <input
+                        class="form-check-input"
+                        type="checkbox"
+                        id="chkAutoTMRouteCode"
+                        formControlName="chkAutoTMRouteCode"
+                        (change)="chkAutoTMRouteCode_CheckedChanged()"
+                      />
+                    </div>
+                  </td>
+                </tr>
+
+                <tr>
+                  <td width="150">
+                    <label for="txtTMRouteCodePrefix" class="Captionstyle"
+                      >TM Route Code Prefix</label
+                    >
+                  </td>
+                  <td>
                     <input
-                      class="form-check-input"
-                      type="checkbox"
-                      id="chkAutoTMRouteCode"
-                      formControlName="chkAutoTMRouteCode"
-                      (change)="chkAutoTMRouteCode_CheckedChanged()"
+                      type="text"
+                      id="txtTMRouteCodePrefix"
+                      class="Textboxstyle"
+                      style="width: 120px"
+                      formControlName="tmRouteCodePrefix"
+                      maxlength="10"
+                      [readonly]="
+                        !merchandizing.get('chkAutoTMRouteCode')?.value
+                      "
                     />
-                  </div>
-                </td>
-              </tr>
-              <tr>
-                <td width="140">
-                  <label for="txtTMRouteCodePrefix" class="Captionstyle"
-                    >TM Route Code Prefix</label
-                  >
-                </td>
-                <td>
-                  <input
-                    type="text"
-                    id="txtTMRouteCodePrefix"
-                    class="Textboxstyle"
-                    style="width: 120px"
-                    formControlName="tmRouteCodePrefix"
-                    maxlength="10"
-                    [readonly]="!merchandizing.get('chkAutoTMRouteCode')?.value"
-                  />
-                  @if (merchandizing.get('tmRouteCodePrefix')?.invalid &&
-                  merchandizing.get('tmRouteCodePrefix')?.touched) {
-                  <div class="text-danger small">
-                    @if
-                    (merchandizing.get('tmRouteCodePrefix')?.errors?.['pattern'])
-                    {
-                    <div>Invalid Entry (Alphanumeric, _, -)</div>
+                    @if (merchandizing.get('tmRouteCodePrefix')?.invalid &&
+                    merchandizing.get('tmRouteCodePrefix')?.touched) {
+                    <div class="text-danger small">
+                      @if
+                      (merchandizing.get('tmRouteCodePrefix')?.errors?.['pattern'])
+                      {
+                      <div>Invalid Entry (Alphanumeric, _, -)</div>
+                      }
+                    </div>
                     }
-                  </div>
-                  }
-                </td>
-              </tr>
-              <tr>
-                <td width="140">
-                  <label for="txtNextTMRouteNo" class="Captionstyle"
-                    >Next TM Route No</label
-                  >
-                </td>
-                <td>
-                  <input
-                    type="text"
-                    id="txtNextTMRouteNo"
-                    class="Textboxstyle"
-                    style="width: 120px; text-align: right"
-                    formControlName="nextTMRouteNo"
-                    readonly
-                  />
-                </td>
-              </tr>
-            </tbody>
-          </table>
+                  </td>
+                </tr>
+
+                <tr>
+                  <td width="150">
+                    <label for="txtNextTMRouteNo" class="Captionstyle"
+                      >Next TM Route No</label
+                    >
+                  </td>
+                  <td>
+                    <input
+                      type="text"
+                      id="txtNextTMRouteNo"
+                      class="Textboxstyle"
+                      style="width: 120px; text-align: right"
+                      formControlName="nextTMRouteNo"
+                      readonly
+                    />
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </fieldset>
         </div>
       </div>
     </div>
@@ -1685,8 +1743,8 @@
       </button>
     </div>
   </form>
-  <!-- Loading Spinner -->
 
+  <!-- Loading Spinner -->
   <ngx-spinner
     [fullScreen]="true"
     color="#a0cadb"
@@ -1695,6 +1753,7 @@
     size="medium"
     >Please wait...</ngx-spinner
   >
+
   <!-- Message Prompt Component -->
   <xont-ventura-message-prompt #msgPrompt></xont-ventura-message-prompt>
 </div>
