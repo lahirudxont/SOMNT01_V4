@@ -7,6 +7,8 @@ import {
   OnInit,
   OnDestroy,
   inject,
+  ElementRef,
+  ViewChild,
 } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 
@@ -18,7 +20,8 @@ declare var $: any;
   template: `
     <!-- calendar button -->
     <button
-      class="btn btn-xs "
+      #calendarBtn
+      class="btn btn-xs"
       type="button"
       (click)="openPicker()"
       [disabled]="_disabled"
@@ -30,9 +33,10 @@ declare var $: any;
 export class XontVenturaDatepickerComponent
   implements OnInit, AfterViewInit, OnDestroy
 {
-  @Input() id!: string; // internal id (not used much now)
-  @Input() targetId!: string; // <-- external input id
+  @Input() id!: string;
+  @Input() targetId!: string;
   @Output() onDateSelect = new EventEmitter<string>();
+  @ViewChild('calendarBtn') calendarBtn!: ElementRef;
 
   private http = inject(HttpClient);
   format = 'yyyy/mm/dd';
@@ -63,13 +67,14 @@ export class XontVenturaDatepickerComponent
     }
 
     const $target = $('#' + this.targetId);
+    const isReadonly = $target.attr('readonly') !== undefined;
 
     $target
       .datepicker({
         todayHighlight: true,
         autoclose: true,
         todayBtn: 'linked',
-        showOnFocus: false,
+        showOnFocus: !isReadonly, // Don't show on focus if readonly
       })
       .on('changeDate', (e: any) => {
         const year = e.date.getFullYear();
@@ -77,19 +82,16 @@ export class XontVenturaDatepickerComponent
         const date = e.date.getDate().toString().padStart(2, '0');
 
         const output = this.formatDate(year, month, date);
-
-        // update external input value
         $target.val(output);
-
-        // emit to parent
         this.onDateSelect.emit(output);
       });
 
-    // close on outside click
+    // Close on outside click
     this.docClickHandler = (event: any) => {
       if (
         !$(event.target).closest('.datepicker').length &&
-        !$(event.target).closest('#' + this.targetId).length
+        !$(event.target).closest('#' + this.targetId).length &&
+        !$(event.target).closest(this.calendarBtn.nativeElement).length
       ) {
         $target.datepicker('hide');
       }
@@ -99,7 +101,15 @@ export class XontVenturaDatepickerComponent
 
   openPicker() {
     const $target = $('#' + this.targetId);
-    $target.focus().datepicker('show'); // ensure it opens even if readonly
+    const isReadonly = $target.attr('readonly') !== undefined;
+
+    if (isReadonly) {
+      // For readonly inputs, show the datepicker directly
+      $target.datepicker('show');
+    } else {
+      // For editable inputs, focus first
+      $target.focus().datepicker('show');
+    }
   }
 
   private formatDate(year: string, month: string, date: string): string {
@@ -133,11 +143,14 @@ export class XontVenturaDatepickerComponent
   }
 
   public reset() {
-    $('#' + this.targetId).datepicker({
+    const $target = $('#' + this.targetId);
+    const isReadonly = $target.attr('readonly') !== undefined;
+
+    $target.datepicker({
       todayHighlight: true,
       autoclose: true,
       todayBtn: 'linked',
-      showOnFocus: false,
+      showOnFocus: !isReadonly,
     });
   }
 
