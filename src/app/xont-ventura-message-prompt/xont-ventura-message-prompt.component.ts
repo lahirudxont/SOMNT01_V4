@@ -23,11 +23,6 @@ declare var $: any;
   template: `
     <!-- Loading indicator (simple implementation without ng-busy) -->
 
-    <mat-spinner
-      *ngIf="isLoading"
-      diameter="40"
-      class="loading-spinner"
-    ></mat-spinner>
     <!-- Confirm Modal -->
     <div
       *ngIf="messageType === 'confirm'"

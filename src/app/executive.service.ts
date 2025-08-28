@@ -279,7 +279,7 @@ export class ExecutiveService {
   }
   public saveExecutiveData(ExecutiveData: any) {
     return this.http
-      .post(this.siteName() + 'api/SOMNT01/SaveAll', ExecutiveData)
+      .post(this.siteName() + '/api/SOMNT01/SaveAll', ExecutiveData)
 
       .pipe(catchError((error) => this.handleError(error)));
   }
