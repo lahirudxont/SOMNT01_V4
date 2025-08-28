@@ -487,6 +487,7 @@ export class NewComponent implements OnInit, AfterViewInit, OnDestroy {
       this.setFormMode(this.pageInit.mode);
       this.loadExecutiveGroups();
 
+      this.GetHierarchyType();
       if (this.isEditMode() || this.isNewBasedOnMode()) {
         this.loadExecutiveData();
       } else {
@@ -527,7 +528,6 @@ export class NewComponent implements OnInit, AfterViewInit, OnDestroy {
     this.other.get('lastOrderNo')?.disable();
 
     this.LoadReturnLocations();
-    this.GetHierarchyType();
   }
 
   private loadStoredData(): void {
@@ -727,6 +727,7 @@ export class NewComponent implements OnInit, AfterViewInit, OnDestroy {
         isValidateOperationType: false,
       });
     }
+    this.hierarchyType.set(this.executiveData.hierarchyType?.trim() || '');
     this.loadClassificationData();
     this.LoadReturnLocations();
   }
