@@ -484,7 +484,6 @@
                     style="width: 230px"
                     formControlName="imeiNo"
                     maxlength="20"
-                    [readonly]="!profile.get('chkValIMEI')?.value"
                   />
                   <span id="lblIMEIReq" class="Errormessagetextstyle">{{
                     lblIMEIReq
@@ -498,7 +497,6 @@
                       type="checkbox"
                       id="chkValIMEI"
                       formControlName="chkValIMEI"
-                      (change)="ValidateIMEINo()"
                     />
                     <label
                       class="form-check-label Captionstyle"
@@ -1171,25 +1169,28 @@
               </tr>
               <tr>
                 <td width="145">
-                  <label for="txtCommissionPercentage" class="Captionstyle"
-                    >Commission Percentage</label
+                  <label for="txtLastGRNNo" class="Captionstyle"
+                    >Last GRN No</label
                   >
                 </td>
                 <td>
                   <input
                     type="text"
-                    id="txtCommissionPercentage"
+                    id="txtLastGRNNo"
                     class="Textboxstyle"
                     style="width: 120px; text-align: right"
-                    formControlName="commissionPercentage"
-                    (blur)="validateCommissionPercentage()"
+                    formControlName="lastGRNNo"
                   />
-                  @if (!other.get('commissionPercentagevalid')?.value) {
+                  @if (other.get('lastGRNNo')?.invalid &&
+                  other.get('lastGRNNo')?.touched) {
                   <div class="text-danger small">
-                    Invalid Percentage (0-100)
+                    @if (other.get('lastGRNNo')?.errors?.['pattern']) {
+                    <div>Invalid Entry (Numbers)</div>
+                    }
                   </div>
                   }
                 </td>
+
                 <td width="120"></td>
                 <td width="145">
                   <label for="txtCashLimit" class="Captionstyle"
@@ -1216,22 +1217,22 @@
               </tr>
               <tr>
                 <td width="145">
-                  <label for="txtLastGRNNo" class="Captionstyle"
-                    >Last GRN No</label
+                  <label for="txtLastRetailerNo" class="Captionstyle"
+                    >Last Retailer No</label
                   >
                 </td>
                 <td>
                   <input
                     type="text"
-                    id="txtLastGRNNo"
+                    id="txtLastRetailerNo"
                     class="Textboxstyle"
                     style="width: 120px; text-align: right"
-                    formControlName="lastGRNNo"
+                    formControlName="lastRetailerNo"
                   />
-                  @if (other.get('lastGRNNo')?.invalid &&
-                  other.get('lastGRNNo')?.touched) {
+                  @if (other.get('lastRetailerNo')?.invalid &&
+                  other.get('lastRetailerNo')?.touched) {
                   <div class="text-danger small">
-                    @if (other.get('lastGRNNo')?.errors?.['pattern']) {
+                    @if (other.get('lastRetailerNo')?.errors?.['pattern']) {
                     <div>Invalid Entry (Numbers)</div>
                     }
                   </div>
@@ -1263,28 +1264,83 @@
               </tr>
               <tr>
                 <td width="145">
-                  <label for="txtLastRetailerNo" class="Captionstyle"
-                    >Last Retailer No</label
+                  <label for="txtCommissionPercentage" class="Captionstyle"
+                    >Commission Percentage</label
                   >
                 </td>
                 <td>
                   <input
                     type="text"
-                    id="txtLastRetailerNo"
+                    id="txtCommissionPercentage"
                     class="Textboxstyle"
                     style="width: 120px; text-align: right"
-                    formControlName="lastRetailerNo"
+                    formControlName="commissionPercentage"
+                    (blur)="validateCommissionPercentage()"
                   />
-                  @if (other.get('lastRetailerNo')?.invalid &&
-                  other.get('lastRetailerNo')?.touched) {
+                  @if (!other.get('commissionPercentagevalid')?.value) {
                   <div class="text-danger small">
-                    @if (other.get('lastRetailerNo')?.errors?.['pattern']) {
-                    <div>Invalid Entry (Numbers)</div>
-                    }
+                    Invalid Percentage (0-100)
                   </div>
                   }
                 </td>
                 <td width="120"></td>
+                <td width="145">
+                  <label for="txtApplicationType" class="Captionstyle"
+                    >Applicaion Type</label
+                  >
+                </td>
+                <td>
+                  <input
+                    type="text"
+                    id="txtApplicationType"
+                    class="Textboxstyle"
+                    style="width: 120px; text-align: right"
+                    formControlName="applicationType"
+                    readonly
+                  />
+                </td>
+              </tr>
+              <tr>
+                <td width="145">
+                  <label for="txtMappingExecutiveCode" class="Captionstyle"
+                    >Mapping Executive Code</label
+                  >
+                </td>
+                <td>
+                  <input
+                    type="text"
+                    id="txtMappingExecutiveCode"
+                    class="Textboxstyle"
+                    style="width: 120px"
+                    formControlName="mappingExecutiveCode"
+                    maxlength="10"
+                  />
+                </td>
+
+                <td width="120"></td>
+                <td width="145">
+                  <label for="lpmtCostCenter" class="Captionstyle"
+                    >Cost Center</label
+                  >
+                </td>
+                <td>
+                  <xont-ventura-list-prompt
+                    id="lpmtCostCenter"
+                    name="lpmtCostCenter"
+                    #lpmtCostCenter
+                    [maxLengths]="[10, 50]"
+                    [inputWidths]="[100, 250]"
+                    [gridHeaders]="['Code', 'Description']"
+                    [gridFields]="['code', 'description']"
+                    [mandatory]="false"
+                    [strict]="true"
+                    [control]="other"
+                    [modelProps]="['costCenterCode', 'costCenterDesc']"
+                    [dataFields]="['code', 'description']"
+                  ></xont-ventura-list-prompt>
+                </td>
+              </tr>
+              <tr>
                 <td width="145">
                   <label for="ddlSurveyRecurrence" class="Captionstyle"
                     >Survey Recurrence</label
@@ -1305,6 +1361,7 @@
                   </select>
                 </td>
               </tr>
+
               <tr>
                 <td width="145">
                   <label for="datepickerID4" class="Captionstyle"
@@ -1327,7 +1384,8 @@
                     (onDateSelect)="onLastSurveyDateSelect($event)"
                   ></xont-ventura-datepicker>
                 </td>
-                <td width="120"></td>
+              </tr>
+              <tr>
                 <td width="145">
                   <label for="datepickerID5" class="Captionstyle"
                     >Survey Active Date</label
@@ -1406,45 +1464,6 @@
                       formControlName="chkOnlineExecutive"
                     />
                   </div>
-                </td>
-              </tr>
-              <tr>
-                <td width="145">
-                  <label for="txtMappingExecutiveCode" class="Captionstyle"
-                    >Mapping Executive Code</label
-                  >
-                </td>
-                <td>
-                  <input
-                    type="text"
-                    id="txtMappingExecutiveCode"
-                    class="Textboxstyle"
-                    style="width: 120px"
-                    formControlName="mappingExecutiveCode"
-                    maxlength="10"
-                  />
-                </td>
-                <td width="120"></td>
-                <td width="145">
-                  <label for="lpmtCostCenter" class="Captionstyle"
-                    >Cost Center</label
-                  >
-                </td>
-                <td>
-                  <xont-ventura-list-prompt
-                    id="lpmtCostCenter"
-                    name="lpmtCostCenter"
-                    #lpmtCostCenter
-                    [maxLengths]="[10, 50]"
-                    [inputWidths]="[100, 250]"
-                    [gridHeaders]="['Code', 'Description']"
-                    [gridFields]="['code', 'description']"
-                    [mandatory]="false"
-                    [strict]="true"
-                    [control]="other"
-                    [modelProps]="['costCenterCode', 'costCenterDesc']"
-                    [dataFields]="['code', 'description']"
-                  ></xont-ventura-list-prompt>
                 </td>
               </tr>
               <tr [hidden]="hierarchyType() === '1'">

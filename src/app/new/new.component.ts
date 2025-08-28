@@ -503,6 +503,8 @@ export class NewComponent implements OnInit, AfterViewInit, OnDestroy {
     this.isNewBasedOnMode.set(mode === 'newBasedOn');
     if (mode === 'edit') {
       this.ExecutiveCode.disable();
+      this.pnlUserProfile.Visible = false;
+      //this.lpmtCostCenter.mandatory = false;
     } else {
       this.ExecutiveCode.enable();
     }
@@ -510,6 +512,11 @@ export class NewComponent implements OnInit, AfterViewInit, OnDestroy {
 
   private initializeNewMode(): void {
     this.profile.patchValue({ chkActive: true, isValidateOperationType: true });
+    this.other.get('lastGRNNo')?.disable();
+    this.other.get('lastSurveyDate')?.disable();
+    this.other.get('lastRetailerNo')?.disable();
+    this.other.get('lastOrderNo')?.disable();
+
     this.LoadReturnLocations();
     this.GetHierarchyType();
   }
@@ -588,7 +595,9 @@ export class NewComponent implements OnInit, AfterViewInit, OnDestroy {
 
     // Populate Profile Tab
     this.profile.patchValue({
-      executiveCode: this.executiveData.executiveCode?.trim() || '',
+      executiveCode: this.isEditMode()
+        ? this.executiveData.executiveCode?.trim() || ''
+        : '',
       executiveName: this.executiveData.executiveName?.trim() || '',
       executiveGroup: this.executiveData.executiveGroup?.trim() || '1',
       operationType: this.executiveData.operationType?.trim() || '',
@@ -690,7 +699,25 @@ export class NewComponent implements OnInit, AfterViewInit, OnDestroy {
       tmRouteCodePrefix: this.executiveData.tmpsaCodePrefix?.trim() || '',
       nextTMRouteNo: this.executiveData.nextTMPSANo?.toString() || '',
     });
-
+    let opType = this.profile.get('operationType')?.value;
+    if (
+      !(opType.trim() == 'OR' || opType.trim() == 'SL' || opType.trim() == 'BT')
+    ) {
+      //V3008
+      this.pnlReturn.Visible = false;
+      this.pnlStockDetails.Visible = false;
+      this.pnlStockTerritory.Visible = false;
+      this.profile.patchValue({
+        isValidateOperationType: false,
+      });
+    } else {
+      this.pnlReturn.Visible = true;
+      this.pnlStockDetails.Visible = true;
+      this.pnlStockTerritory.Visible = true;
+      this.profile.patchValue({
+        isValidateOperationType: false,
+      });
+    }
     this.loadClassificationData();
     this.LoadReturnLocations();
   }
@@ -926,11 +953,6 @@ export class NewComponent implements OnInit, AfterViewInit, OnDestroy {
       }
     }
     this.other.updateValueAndValidity();
-  }
-
-  ValidateIMEINo(): void {
-    const currentVal = this.profile.get('chkValIMEI')?.value;
-    this.profile.patchValue({ chkValIMEI: !currentVal });
   }
 
   chkAutoTMRouteCode_CheckedChanged(): void {
